@@ -42,7 +42,8 @@ def diff_color(color_a, color_b):
 
 
 def tuple_to_color(color_tuple):
-    """Given a tuple representing a color, return a Pygame color contructed from that tuple."""
+    """Given a tuple representing a color,
+    return a Pygame color contructed from that tuple."""
     return Color(*color_tuple)
 
 

@@ -5,8 +5,8 @@ Imports the the game demo and executes the main function.
 """
 
 import sys
-import game
+from videogame import game
 
 if __name__ == "__main__":
-    # TODO: Prepare and run the game
-    sys.exit(0)
+    instance = game.SpaceInvadersGame()
+    sys.exit(instance.run())

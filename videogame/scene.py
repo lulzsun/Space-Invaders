@@ -1,7 +1,9 @@
 """Scene objects for making games with PyGame."""
 
+import os
 import pygame
-import rgbcolors
+from videogame import rgbcolors
+from videogame.sprites import Crab, Octopus, Player, Squid
 
 
 # If you're interested in using abstract base classes, feel free to rewrite
@@ -13,11 +15,11 @@ import rgbcolors
 class Scene:
     """Base class for making PyGame Scenes."""
 
-    def __init__(self, screen, background_color, soundtrack=None):
+    def __init__(self,
+                 screen: pygame.Surface,
+                 soundtrack=None):
         """Scene initializer"""
         self._screen = screen
-        self._background = pygame.Surface(self._screen.get_size())
-        self._background.fill(background_color)
         self._frame_rate = 60
         self._is_valid = True
         self._soundtrack = soundtrack
@@ -25,12 +27,11 @@ class Scene:
 
     def draw(self):
         """Draw the scene."""
-        self._screen.blit(self._background, (0, 0))
+        self._screen = pygame.display.get_surface()
+        self._screen.fill(rgbcolors.black)
 
     def process_event(self, event):
         """Process a game event by the scene."""
-        # This should be commented out or removed since it generates a lot of noise.
-        # print(str(event))
         if event.type == pygame.QUIT:
             print("Good Bye!")
             self._is_valid = False
@@ -71,38 +72,48 @@ class Scene:
         """Return the frame rate the scene desires."""
         return self._frame_rate
 
+class InvadersGameScene(Scene):
+    """Scene with the actual gameplay of space invaders"""
 
-class PressAnyKeyToExitScene(Scene):
-    """Empty scene where it will invalidate when a key is pressed."""
+    def __init__(self, screen, soundtrack=None):
+        """Initialize the scene."""
+        super().__init__(screen, soundtrack)
+        self.player = Player()
+        self.player_move = 0
+        self.player_position_x = 0
 
     def process_event(self, event):
         """Process game events."""
-        # TODO: Have the super/parent class process the event first before
-        # processing the event yourself.
-        # TOOD: If the event type is a keydown event, set self._is_valid to False.
+        super().process_event(event)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_a and self.player_move != -1:
+                self.player_move = -1
+            if event.key == pygame.K_d and self.player_move != 1:
+                self.player_move = 1
+        elif event.type == pygame.KEYUP:
+            if event.key == pygame.K_a and self.player_move == -1:
+                self.player_move = 0
+            if event.key == pygame.K_d and self.player_move == 1:
+                self.player_move = 0
 
-
-class PolygonTitleScene(PressAnyKeyToExitScene):
-    """Scene with a title string and a polygon."""
-
-    def __init__(
-        self,
-        screen,
-        title,
-        title_color=rgbcolors.ghostwhite,
-        title_size=72,
-        background_color=rgbcolors.papaya_whip,
-        soundtrack=None,
-    ):
-        """Initialize the scene."""
-        # TODO: Have the super/parent class initialized
-        # TODO: Ask pygame for the default font at title_size size. Use the font to render the string title and assign this to an instance variable named self._title in the color title_color.
-        # TODO: Ask pygame for the default font at 18 point size. Use the font to render the string 'Press any key.' in the color black. Assign the rendered text to an instance variable named self._press_any_key.
+    def update_scene(self):
+        """Update the scene state."""
+        super().update_scene()
+        self.player_position_x += self.player_move
 
     def draw(self):
         """Draw the scene."""
-        # TODO: Have the super/parent class draw first before
-        # drawing yourself.
-        # TODO: Draw a 100 pixel by 100 pixel rectangle that has it's center located 100 pixels below the center of the window.
-        # TODO: Blit the title text to the center of the window.
-        # TODO: Blit the press any key message to the bottom of the window. The text should be centered horizontally and be 50 pixels above the bottom edge of the window.
+        super().draw()
+
+        for i in range(11):
+            Squid().draw(self._screen, (i*16 + 24, 64))
+
+        for i in range(11):
+            for j in range(2):
+                Crab().draw(self._screen, (i*16 + 24, 64+16*(j+1)))
+
+        for i in range(11):
+            for j in range(2):
+                Octopus().draw(self._screen, (i*16 + 24, 64+32+16*(j+1)))
+
+        self.player.draw(self._screen, (self.player_position_x, 216))
