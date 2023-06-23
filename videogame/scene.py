@@ -1,9 +1,10 @@
 """Scene objects for making games with PyGame."""
 
 import os
+from typing import List
 import pygame
 from videogame import rgbcolors
-from videogame.sprites import Crab, Octopus, Player, Squid
+from videogame.sprites import Alien, Crab, Octopus, Player, Squid
 
 
 # If you're interested in using abstract base classes, feel free to rewrite
@@ -78,9 +79,28 @@ class InvadersGameScene(Scene):
     def __init__(self, screen, soundtrack=None):
         """Initialize the scene."""
         super().__init__(screen, soundtrack)
+        self.frames = 0
         self.player = Player()
         self.player_move = 0
         self.player_position_x = 0
+
+        self.aliens: List[Alien]
+        self.aliens = []
+        self.alien_move = 1
+        self.alien_position_x = 0
+        self.alien_position_y = 0
+        self.alien_move_frame = 0
+
+        for i in range(11):
+            self.aliens.append(Squid((i*16 + 24, 64)))
+
+        for i in range(11):
+            for j in range(2):
+                self.aliens.append(Crab((i*16 + 24, 64+16*(j+1))))
+
+        for i in range(11):
+            for j in range(2):
+                self.aliens.append(Octopus((i*16 + 24, 64+32+16*(j+1))))
 
     def process_event(self, event):
         """Process game events."""
@@ -98,22 +118,35 @@ class InvadersGameScene(Scene):
 
     def update_scene(self):
         """Update the scene state."""
+        self.frames += 1
         super().update_scene()
         self.player_position_x += self.player_move
+
+        if self.frames % (2 * self.frame_rate()) == 0:
+            self.alien_position_x = 55
+
+        if self.aliens[0]._position[0] == 24 + 16:
+            if self.alien_move != -1:
+                self.alien_position_y = 55
+                self.alien_move = -1
+        elif self.aliens[0]._position[0] == 16:
+            if self.alien_move != 1:
+                self.alien_position_y = 55
+                self.alien_move = 1
+
 
     def draw(self):
         """Draw the scene."""
         super().draw()
-
-        for i in range(11):
-            Squid().draw(self._screen, (i*16 + 24, 64))
-
-        for i in range(11):
-            for j in range(2):
-                Crab().draw(self._screen, (i*16 + 24, 64+16*(j+1)))
-
-        for i in range(11):
-            for j in range(2):
-                Octopus().draw(self._screen, (i*16 + 24, 64+32+16*(j+1)))
-
         self.player.draw(self._screen, (self.player_position_x, 216))
+
+        for alien in self.aliens:
+            alien.draw(self._screen, (0, 0), relative=True)
+        
+        if self.alien_position_x > 0:
+            self.alien_position_x -= 1
+            self.aliens[self.alien_position_x].draw(self._screen, (2*self.alien_move, 0), relative=True)
+
+        if self.alien_position_y > 0:
+            self.alien_position_y -= 1
+            self.aliens[self.alien_position_y].draw(self._screen, (2*self.alien_move, 16), relative=True)
