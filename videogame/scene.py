@@ -126,8 +126,8 @@ class InvadersGameScene(Scene):
         self.player_position_x += self.player_move
 
         self.player_position_x = max(
-            min(self.player_position_x, self._screen.get_width()-16-24)
-        , 24)
+            min(self.player_position_x, self._screen.get_width()-16*2)
+        , 16)
 
         if self.alien_position_x == 0:
             if self.frames % (2 * self.frame_rate()) == 0:
@@ -149,12 +149,14 @@ class InvadersGameScene(Scene):
         Font().draw(self._screen, "0000", (24, 24))
         Font().draw(self._screen, "0000", (88, 24))
         Font().draw(self._screen, "0000", (168, 24))
-        Font().draw(self._screen, "TAITO COP", (80, 32))
+        # Font().draw(self._screen, "TAITO COP", (80, 32))
 
         bottom = pygame.Surface((self._screen.get_width(), 1))
         bottom.fill((255, 255, 255))
         self._screen.blit(bottom, (0, 239))
         Font().draw(self._screen, "3", (8, 240))
+        Player().draw(self._screen, (24, 240))
+        Player().draw(self._screen, (24+16, 240))
         Font().draw(self._screen, "CREDIT 00", (136, 240))
         self.player.draw(self._screen, (self.player_position_x, 216))
 
@@ -174,10 +176,14 @@ class InvadersGameScene(Scene):
 
         # create a color overlay in certain areas of the screen
         # this mimics 1978 space invaders coloring
-        overlay_rect = pygame.Surface((self._screen.get_width(), 16), pygame.SRCALPHA)
+        overlay_rect = pygame.Surface((self._screen.get_width(), 32), pygame.SRCALPHA)
         overlay_rect.fill((254, 30, 30))
         self._screen.blit(overlay_rect, (0, 32), special_flags=pygame.BLEND_RGB_MULT)
 
-        overlay_rect = pygame.Surface((self._screen.get_width(), 48), pygame.SRCALPHA)
+        overlay_rect = pygame.Surface((self._screen.get_width(), 56), pygame.SRCALPHA)
         overlay_rect.fill((30, 254, 30))
-        self._screen.blit(overlay_rect, (0, 192), special_flags=pygame.BLEND_RGB_MULT)
+        self._screen.blit(overlay_rect, (0, 184), special_flags=pygame.BLEND_RGB_MULT)
+
+        overlay_rect = pygame.Surface((111, 16), pygame.SRCALPHA)
+        overlay_rect.fill((30, 254, 30))
+        self._screen.blit(overlay_rect, (25, 240), special_flags=pygame.BLEND_RGB_MULT)
