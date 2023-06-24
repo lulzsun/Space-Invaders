@@ -72,7 +72,7 @@ class SpaceInvadersGame(VideoGame):
 
     def __init__(self):
         """Init the Pygame demo."""
-        super().__init__(window_title="Hello")
+        super().__init__(window_title="1978 Space Invaders")
         self._main_dir = os.path.dirname(__file__)
         self._data_dir = os.path.join(os.path.dirname(__file__), 'data')
         print(f"Our main directory is {self._main_dir}")

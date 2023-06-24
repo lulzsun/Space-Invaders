@@ -4,7 +4,10 @@ import os
 from typing import List
 import pygame
 from videogame import rgbcolors
-from videogame.sprites import Alien, Crab, Octopus, Player, Squid
+from videogame.sprites import (
+    Alien, Barrier, Crab, Font, 
+    Octopus, Player, Squid
+)
 
 
 # If you're interested in using abstract base classes, feel free to rewrite
@@ -82,7 +85,7 @@ class InvadersGameScene(Scene):
         self.frames = 0
         self.player = Player()
         self.player_move = 0
-        self.player_position_x = 0
+        self.player_position_x = 24
 
         self.aliens: List[Alien]
         self.aliens = []
@@ -122,8 +125,13 @@ class InvadersGameScene(Scene):
         super().update_scene()
         self.player_position_x += self.player_move
 
-        if self.frames % (2 * self.frame_rate()) == 0:
-            self.alien_position_x = 55
+        self.player_position_x = max(
+            min(self.player_position_x, self._screen.get_width()-16-24)
+        , 24)
+
+        if self.alien_position_x == 0:
+            if self.frames % (2 * self.frame_rate()) == 0:
+                self.alien_position_x = 55
 
         if self.aliens[0]._position[0] == 24 + 16:
             if self.alien_move != -1:
@@ -134,11 +142,24 @@ class InvadersGameScene(Scene):
                 self.alien_position_y = 55
                 self.alien_move = 1
 
-
     def draw(self):
         """Draw the scene."""
         super().draw()
+        Font().draw(self._screen, "SCORE<1> HI-SCORE SCORE<2>", (8, 8))
+        Font().draw(self._screen, "0000", (24, 24))
+        Font().draw(self._screen, "0000", (88, 24))
+        Font().draw(self._screen, "0000", (168, 24))
+        Font().draw(self._screen, "TAITO COP", (80, 32))
+
+        bottom = pygame.Surface((self._screen.get_width(), 1))
+        bottom.fill((255, 255, 255))
+        self._screen.blit(bottom, (0, 239))
+        Font().draw(self._screen, "3", (8, 240))
+        Font().draw(self._screen, "CREDIT 00", (136, 240))
         self.player.draw(self._screen, (self.player_position_x, 216))
+
+        for i in range(4):
+            Barrier((31+(31*(i*1.5)), 192)).draw(self._screen, (0, 0), True)
 
         for alien in self.aliens:
             alien.draw(self._screen, (0, 0), relative=True)
@@ -150,3 +171,13 @@ class InvadersGameScene(Scene):
         if self.alien_position_y > 0:
             self.alien_position_y -= 1
             self.aliens[self.alien_position_y].draw(self._screen, (2*self.alien_move, 16), relative=True)
+
+        # create a color overlay in certain areas of the screen
+        # this mimics 1978 space invaders coloring
+        overlay_rect = pygame.Surface((self._screen.get_width(), 16), pygame.SRCALPHA)
+        overlay_rect.fill((254, 30, 30))
+        self._screen.blit(overlay_rect, (0, 32), special_flags=pygame.BLEND_RGB_MULT)
+
+        overlay_rect = pygame.Surface((self._screen.get_width(), 48), pygame.SRCALPHA)
+        overlay_rect.fill((30, 254, 30))
+        self._screen.blit(overlay_rect, (0, 192), special_flags=pygame.BLEND_RGB_MULT)
