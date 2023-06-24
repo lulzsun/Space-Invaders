@@ -170,7 +170,7 @@ class InvadersGameScene(Scene):
 
         if self.alien_position_y > 0:
             self.alien_position_y -= 1
-            self.aliens[self.alien_position_y].draw(self._screen, (2*self.alien_move, 16), relative=True)
+            self.aliens[self.alien_position_y].draw(self._screen, (2*self.alien_move, 8), relative=True)
 
         # create a color overlay in certain areas of the screen
         # this mimics 1978 space invaders coloring
