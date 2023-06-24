@@ -5,7 +5,7 @@ from typing import List
 import pygame
 from videogame import rgbcolors
 from videogame.sprites import (
-    Alien, Barrier, Crab, Font, 
+    Alien, Shield, Crab, Font, 
     Octopus, Player, Squid
 )
 
@@ -161,7 +161,7 @@ class InvadersGameScene(Scene):
         self.player.draw(self._screen, (self.player_position_x, 216))
 
         for i in range(4):
-            Barrier((31+(31*(i*1.5)), 192)).draw(self._screen, (0, 0), True)
+            Shield((31+(31*(i*1.5)), 192)).draw(self._screen, (0, 0), True)
 
         for alien in self.aliens:
             alien.draw(self._screen, (0, 0), relative=True)

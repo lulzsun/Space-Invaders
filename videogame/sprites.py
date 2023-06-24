@@ -65,10 +65,10 @@ class Octopus(Alien):
         """Initialize the Octopus alien."""
         super().__init__('alien3.png', position)
 
-class Barrier(Alien):
+class Shield(Alien):
     def __init__(self, position):
-        """Initialize the Barrier."""
-        super().__init__('barrier.png', position)
+        """Initialize the Shield."""
+        super().__init__('shield.png', position)
         self._rect = pygame.Rect((0, 0, 24, 16))
         self._surf = pygame.Surface(self._rect.size).convert()
 
