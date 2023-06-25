@@ -131,26 +131,48 @@ class InvadersGameScene(Scene):
         # Update alien(s) position
         if self.alien_position_x == 0:
             if self.frames % (2 * self.frame_rate()) == 0:
-                self.alien_position_x = 55
+                self.alien_position_x = len(self.aliens)
 
         if self.aliens[0]._position[0] == 24 + 16:
             if self.alien_move != -1:
-                self.alien_position_y = 55
+                self.alien_position_y = len(self.aliens)
                 self.alien_move = -1
         elif self.aliens[0]._position[0] == 16:
             if self.alien_move != 1:
-                self.alien_position_y = 55
+                self.alien_position_y = len(self.aliens)
                 self.alien_move = 1
 
-        # move bullets
         for bullet in self.bullets:
-            position = bullet.move((0, -4))
+            # move bullets
+            position = (0, 33)
+            if bullet._explode_frame == 0:
+                position = bullet.move((0, -4))
+
             if position[1] < 34:
-                bullet.move((0, 4))
+                if bullet._explode_frame == 0:
+                    bullet.move((0, 4))
                 done = bullet.explode()
                 if done:
                     self.bullets.remove(bullet)
-                    
+
+            # check collision. this is definitely not the right way to do it.
+            # my "sprite" classes are not actually sprite objects, so instead
+            # i am just temporarily creating the sprites to use collide_mask()
+            # i am too stubborn to do things the right way, i may regret this later
+            bullet_sprite = pygame.sprite.Sprite()
+            bullet_sprite.image = bullet._surf
+            bullet_sprite.rect = pygame.Rect((bullet._position[0], bullet._position[1], 3, 8))
+            bullet_sprite.mask = pygame.mask.from_surface(bullet._surf)
+
+            for alien in self.aliens:
+                collide_sprite = pygame.sprite.Sprite()
+                collide_sprite.image = alien._surf
+                collide_sprite.rect = pygame.Rect((alien._position[0], alien._position[1], 16, 8))
+                collide_sprite.mask = pygame.mask.from_surface(alien._surf)
+
+                if pygame.sprite.collide_mask(bullet_sprite, collide_sprite):
+                    self.bullets.remove(bullet)
+                    self.aliens.remove(alien)
 
     def render_updates(self):
         """Render additional screen updates."""
