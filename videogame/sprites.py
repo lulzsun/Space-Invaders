@@ -25,6 +25,30 @@ class Sprite:
             self._position = (self._position[0]+position[0], self._position[1]+position[1])
             surf.blit(self._surf, self._position)
 
+    def is_colliding(self, sprite):
+        """Check collision between another sprite."""
+        # this is definitely not the right way to do it...
+        # my "sprite" classes are not actually sprite objects, so instead
+        # i am just temporarily creating the sprites to use collide_mask()
+        # i am too stubborn to do things the right way, i may regret this later
+        real_sprite1 = pygame.sprite.Sprite()
+        real_sprite1.image = self._surf
+        real_sprite1.rect = pygame.Rect((
+            self._position[0], self._position[1], 
+            self._rect.width, self._rect.height
+        ))
+        real_sprite1.mask = pygame.mask.from_surface(self._surf)
+
+        real_sprite2 = pygame.sprite.Sprite()
+        real_sprite2.image = sprite._surf
+        real_sprite2.rect = pygame.Rect((
+            sprite._position[0], sprite._position[1], 
+            sprite._rect.width, sprite._rect.height
+        ))
+        real_sprite2.mask = pygame.mask.from_surface(sprite._surf)
+
+        return pygame.sprite.collide_mask(real_sprite1, real_sprite2)
+
 class Player(Sprite):
     def __init__(self):
         """Initialize the Player."""

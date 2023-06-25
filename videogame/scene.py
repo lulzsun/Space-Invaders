@@ -155,22 +155,8 @@ class InvadersGameScene(Scene):
                 if done:
                     self.bullets.remove(bullet)
 
-            # check collision. this is definitely not the right way to do it.
-            # my "sprite" classes are not actually sprite objects, so instead
-            # i am just temporarily creating the sprites to use collide_mask()
-            # i am too stubborn to do things the right way, i may regret this later
-            bullet_sprite = pygame.sprite.Sprite()
-            bullet_sprite.image = bullet._surf
-            bullet_sprite.rect = pygame.Rect((bullet._position[0], bullet._position[1], 3, 8))
-            bullet_sprite.mask = pygame.mask.from_surface(bullet._surf)
-
             for alien in self.aliens:
-                collide_sprite = pygame.sprite.Sprite()
-                collide_sprite.image = alien._surf
-                collide_sprite.rect = pygame.Rect((alien._position[0], alien._position[1], 16, 8))
-                collide_sprite.mask = pygame.mask.from_surface(alien._surf)
-
-                if pygame.sprite.collide_mask(bullet_sprite, collide_sprite):
+                if alien.is_colliding(bullet):
                     self.bullets.remove(bullet)
                     self.aliens.remove(alien)
 
