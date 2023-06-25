@@ -6,7 +6,6 @@ import warnings
 import pygame
 import pygame._sdl2 as sdl2
 
-from videogame import rgbcolors
 from videogame.scene import InvadersGameScene
 
 

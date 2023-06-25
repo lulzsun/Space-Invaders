@@ -15,6 +15,7 @@ class Sprite:
     def draw(self, surf: pygame.Surface, position=(0, 0), relative=False):
         """Draw the sprite on a surface at position"""
         position = (position[0], position[1])
+        pygame.Surface.set_colorkey(self._surf, [0, 0, 0], pygame.RLEACCEL)
         if type(self) is not Font().__class__:
             self._surf.blit(self._sheet, (0, 0), self._rect)
         if relative is False:
@@ -28,8 +29,38 @@ class Player(Sprite):
     def __init__(self):
         """Initialize the Player."""
         super().__init__('player.png')
+        self.velocity = 0
+        self.position_x = 24
+        self.shooting = False
+
+    def move(self, event):
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_a or event.key == pygame.K_LEFT:
+                if self.velocity != -1:
+                    self.velocity = -1
+            if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
+                if self.velocity != 1:
+                    self.velocity = 1
+        elif event.type == pygame.KEYUP:
+            if event.key == pygame.K_a or event.key == pygame.K_LEFT:
+                if self.velocity == -1:
+                    self.velocity = 0
+            if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
+                if self.velocity == 1:
+                    self.velocity = 0
+
+    def shoot(self, event):
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                self.shooting = True
+        elif event.type == pygame.KEYUP:
+            if event.key == pygame.K_SPACE:
+                self.shooting = False
 
     def draw(self, surf: pygame.Surface, position=(0, 0), relative=False):
+        # Update player position
+        self.position_x += self.velocity
+        self.position_x = max(min(self.position_x, 224-16*2), 16)
         super().draw(surf, position, relative)
 
 class Alien(Sprite):
@@ -71,6 +102,54 @@ class Shield(Alien):
         super().__init__('shield.png', position)
         self._rect = pygame.Rect((0, 0, 24, 16))
         self._surf = pygame.Surface(self._rect.size).convert()
+
+class Bullet(Sprite):
+    def __init__(self, position, type=0, is_player_owned=False):
+        """Initialize the bullet projectile."""
+        super().__init__('bullet.png', position)
+        self.is_player_owned = is_player_owned
+        self._rect = pygame.Rect((type*4*3, 0, 3, 8))
+        if self.is_player_owned:
+            self._rect = pygame.Rect((14*3, 0, 3, 8))
+        self._surf = pygame.Surface(self._rect.size).convert()
+        self._type = type
+        self._explode_frame = 0
+        self._move_frame = 0
+            
+
+    def move(self, position):
+        """Move bullet and return current position"""
+        new_position = (self._position[0] + position[0], 
+                        self._position[1] + position[1])
+        self._position = new_position
+
+        # animation
+        if self.is_player_owned == False:
+            if self._explode_frame == 0:
+                self._rect = pygame.Rect(((self._type*4*3)+(3*self._move_frame), 0, 3, 8))
+            self._move_frame += 1
+            if self._move_frame == 4:
+                self._move_frame = 0
+        return self._position
+    
+    def explode(self, miss=False):
+        """Play explosion animation."""
+        """If miss is True, play a different sprite"""
+        """Return True when done"""
+        if self._explode_frame == 0:
+            if miss:
+                self._rect = pygame.Rect((3*12, 0, 6, 8))
+                self._position = (self._position[0]-2, self._position[1])
+            else:
+                self._rect = pygame.Rect((3*15, 0, 8, 8))
+                self._position = (self._position[0]-2, self._position[1])
+            self._surf = pygame.Surface(self._rect.size).convert()
+        
+        self._explode_frame += 1
+        return self._explode_frame == 10
+
+    def draw(self, surf: pygame.Surface, position=(0, 0), relative=False):
+        super().draw(surf, position, relative)
 
 class Font(Sprite):
     def __init__(self):

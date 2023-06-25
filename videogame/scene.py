@@ -3,9 +3,8 @@
 import os
 from typing import List
 import pygame
-from videogame import rgbcolors
 from videogame.sprites import (
-    Alien, Shield, Crab, Font, 
+    Alien, Bullet, Shield, Crab, Font, 
     Octopus, Player, Squid
 )
 
@@ -32,7 +31,7 @@ class Scene:
     def draw(self):
         """Draw the scene."""
         self._screen = pygame.display.get_surface()
-        self._screen.fill(rgbcolors.black)
+        self._screen.fill("black")
 
     def process_event(self, event):
         """Process a game event by the scene."""
@@ -82,10 +81,10 @@ class InvadersGameScene(Scene):
     def __init__(self, screen, soundtrack=None):
         """Initialize the scene."""
         super().__init__(screen, soundtrack)
+        self.secret = False
+
         self.frames = 0
         self.player = Player()
-        self.player_move = 0
-        self.player_position_x = 24
 
         self.aliens: List[Alien]
         self.aliens = []
@@ -93,6 +92,9 @@ class InvadersGameScene(Scene):
         self.alien_position_x = 0
         self.alien_position_y = 0
         self.alien_move_frame = 0
+
+        self.bullets: List[Bullet]
+        self.bullets = []
 
         for i in range(11):
             self.aliens.append(Squid((i*16 + 24, 64)))
@@ -108,27 +110,25 @@ class InvadersGameScene(Scene):
     def process_event(self, event):
         """Process game events."""
         super().process_event(event)
+
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_a and self.player_move != -1:
-                self.player_move = -1
-            if event.key == pygame.K_d and self.player_move != 1:
-                self.player_move = 1
-        elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_a and self.player_move == -1:
-                self.player_move = 0
-            if event.key == pygame.K_d and self.player_move == 1:
-                self.player_move = 0
+            if event.key == pygame.K_RETURN:
+                self.secret = not self.secret
+
+        self.player.move(event)
+        self.player.shoot(event)
 
     def update_scene(self):
         """Update the scene state."""
         self.frames += 1
         super().update_scene()
-        self.player_position_x += self.player_move
 
-        self.player_position_x = max(
-            min(self.player_position_x, self._screen.get_width()-16*2)
-        , 16)
+        if self.player.shooting:
+            # make sure player only has 1 bullet on screen
+            if not any(bullet.is_player_owned is True for bullet in self.bullets):
+                self.bullets.append(Bullet((self.player.position_x+7, 211), is_player_owned=True))
 
+        # Update alien(s) position
         if self.alien_position_x == 0:
             if self.frames % (2 * self.frame_rate()) == 0:
                 self.alien_position_x = 55
@@ -142,38 +142,19 @@ class InvadersGameScene(Scene):
                 self.alien_position_y = 55
                 self.alien_move = 1
 
-    def draw(self):
-        """Draw the scene."""
-        super().draw()
-        Font().draw(self._screen, "SCORE<1> HI-SCORE SCORE<2>", (8, 8))
-        Font().draw(self._screen, "0000", (24, 24))
-        Font().draw(self._screen, "0000", (88, 24))
-        Font().draw(self._screen, "0000", (168, 24))
-        # Font().draw(self._screen, "TAITO COP", (80, 32))
+        # move bullets
+        for bullet in self.bullets:
+            position = bullet.move((0, -4))
+            if position[1] < 34:
+                bullet.move((0, 4))
+                done = bullet.explode()
+                if done:
+                    self.bullets.remove(bullet)
+                    
 
-        bottom = pygame.Surface((self._screen.get_width(), 1))
-        bottom.fill((255, 255, 255))
-        self._screen.blit(bottom, (0, 239))
-        Font().draw(self._screen, "3", (8, 240))
-        Player().draw(self._screen, (24, 240))
-        Player().draw(self._screen, (24+16, 240))
-        Font().draw(self._screen, "CREDIT 00", (136, 240))
-        self.player.draw(self._screen, (self.player_position_x, 216))
-
-        for i in range(4):
-            Shield((31+(31*(i*1.5)), 192)).draw(self._screen, (0, 0), True)
-
-        for alien in self.aliens:
-            alien.draw(self._screen, (0, 0), relative=True)
-        
-        if self.alien_position_x > 0:
-            self.alien_position_x -= 1
-            self.aliens[self.alien_position_x].draw(self._screen, (2*self.alien_move, 0), relative=True)
-
-        if self.alien_position_y > 0:
-            self.alien_position_y -= 1
-            self.aliens[self.alien_position_y].draw(self._screen, (2*self.alien_move, 8), relative=True)
-
+    def render_updates(self):
+        """Render additional screen updates."""
+        super().render_updates()
         # create a color overlay in certain areas of the screen
         # this mimics 1978 space invaders coloring
         overlay_rect = pygame.Surface((self._screen.get_width(), 32), pygame.SRCALPHA)
@@ -187,3 +168,44 @@ class InvadersGameScene(Scene):
         overlay_rect = pygame.Surface((111, 16), pygame.SRCALPHA)
         overlay_rect.fill((30, 254, 30))
         self._screen.blit(overlay_rect, (25, 240), special_flags=pygame.BLEND_RGB_MULT)
+
+    def draw(self):
+        """Draw the scene."""
+        super().draw()
+        Font().draw(self._screen, "SCORE<1> HI-SCORE SCORE<2>", (8, 8))
+        Font().draw(self._screen, "0000", (24, 24))
+        Font().draw(self._screen, "0000", (88, 24))
+        Font().draw(self._screen, "0000", (168, 24))
+        if self.secret:
+            Font().draw(self._screen, "LULZSUN", (80, 32))
+
+        bottom = pygame.Surface((self._screen.get_width(), 1))
+        bottom.fill((255, 255, 255))
+        self._screen.blit(bottom, (0, 239))
+        Font().draw(self._screen, "3", (8, 240))
+        Player().draw(self._screen, (24, 240))
+        Player().draw(self._screen, (24+16, 240))
+        Font().draw(self._screen, "CREDIT 00", (136, 240))
+
+        # render player
+        self.player.draw(self._screen, (self.player.position_x, 216))
+
+        # render shields
+        for i in range(4):
+            Shield((31+(31*(i*1.5)), 192)).draw(self._screen, (0, 0), True)
+
+        # render aliens
+        for alien in self.aliens:
+            alien.draw(self._screen, (0, 0), relative=True)
+        
+        if self.alien_position_x > 0:
+            self.alien_position_x -= 1
+            self.aliens[self.alien_position_x].draw(self._screen, (2*self.alien_move, 0), relative=True)
+
+        if self.alien_position_y > 0:
+            self.alien_position_y -= 1
+            self.aliens[self.alien_position_y].draw(self._screen, (2*self.alien_move, 8), relative=True)
+
+        # render bullets
+        for bullet in self.bullets:
+            bullet.draw(self._screen, relative=True)
