@@ -208,11 +208,17 @@ class InvadersGameScene(Scene):
         
         if self.alien_position_x > 0:
             self.alien_position_x -= 1
-            self.aliens[self.alien_position_x].draw(self._screen, (2*self.alien_move, 0), relative=True)
+            try:
+                self.aliens[self.alien_position_x].draw(self._screen, (2*self.alien_move, 0), relative=True)
+            except IndexError:
+                pass
 
         if self.alien_position_y > 0:
             self.alien_position_y -= 1
-            self.aliens[self.alien_position_y].draw(self._screen, (2*self.alien_move, 8), relative=True)
+            try:
+                self.aliens[self.alien_position_y].draw(self._screen, (2*self.alien_move, 8), relative=True)
+            except IndexError:
+                pass
 
         # render bullets
         for bullet in self.bullets:
