@@ -86,6 +86,9 @@ class InvadersGameScene(Scene):
         self.frames = 0
         self.player = Player()
 
+        self.shields: List[Shield]
+        self.shields = []
+
         self.aliens: List[Alien]
         self.aliens = []
         self.alien_move = 1
@@ -95,6 +98,9 @@ class InvadersGameScene(Scene):
 
         self.bullets: List[Bullet]
         self.bullets = []
+
+        for i in range(4):
+            self.shields.append(Shield((31+(31*(i*1.5)), 192)))
 
         for i in range(11):
             self.aliens.append(Squid((i*16 + 24, 64)))
@@ -144,21 +150,31 @@ class InvadersGameScene(Scene):
 
         for bullet in self.bullets:
             # move bullets
-            position = (0, 33)
+            position = bullet._position
             if bullet._explode_frame == 0:
                 position = bullet.move((0, -4))
+            else:
+                done = bullet.explode()
+                if done:
+                    self.bullets.remove(bullet)
+                continue
 
             if position[1] < 34:
                 if bullet._explode_frame == 0:
                     bullet.move((0, 4))
-                done = bullet.explode()
-                if done:
-                    self.bullets.remove(bullet)
+                bullet.explode()
 
+            # bullet collision check
             for alien in self.aliens:
                 if alien.is_colliding(bullet):
                     self.bullets.remove(bullet)
                     self.aliens.remove(alien)
+
+            for shield in self.shields:
+                if shield.is_colliding(bullet):
+                    bullet.explode()
+                    # TODO: implement shield damage
+                    continue
 
     def render_updates(self):
         """Render additional screen updates."""
@@ -199,8 +215,8 @@ class InvadersGameScene(Scene):
         self.player.draw(self._screen, (self.player.position_x, 216))
 
         # render shields
-        for i in range(4):
-            Shield((31+(31*(i*1.5)), 192)).draw(self._screen, (0, 0), True)
+        for shield in self.shields:
+            shield.draw(self._screen, (0, 0), relative=True)
 
         # render aliens
         for alien in self.aliens:
