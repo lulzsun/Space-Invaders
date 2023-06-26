@@ -92,6 +92,7 @@ class Alien(Sprite):
         """Initialize the Alien."""
         super().__init__(filename, position)
         self._is_alive = True
+        self._explode_frame = 0
     
     def draw(self, surf: pygame.Surface, position=(0, 0), relative=False):
         super().draw(surf, position, relative)
@@ -99,11 +100,23 @@ class Alien(Sprite):
         # on every 'move', the alien will alternate between sprites
         # in the sprite sheet, as part of its animation
         if position != (0, 0) and self._is_alive:
-            if self._rect.left == 0:
-                self._rect = pygame.Rect((16, 0, 16, 8))
-            else:
-                self._rect = pygame.Rect((0, 0, 16, 8))
+            if self._explode_frame == 0:
+                if self._rect.left == 0:
+                    self._rect = pygame.Rect((16, 0, 16, 8))
+                else:
+                    self._rect = pygame.Rect((0, 0, 16, 8))
+                self._surf = pygame.Surface(self._rect.size).convert()
+
+    def explode(self):
+        """Play explosion animation."""
+        """Return True when done"""
+        if self._explode_frame == 0:
+            self._rect = pygame.Rect((32, 0, 16, 8))
+            # self._position = (self._position[0]-2, self._position[1])
             self._surf = pygame.Surface(self._rect.size).convert()
+        
+        self._explode_frame += 1
+        return self._explode_frame == 10
 
 class Squid(Alien):
     def __init__(self, position):
@@ -139,7 +152,6 @@ class Bullet(Sprite):
         self._type = type
         self._explode_frame = 0
         self._move_frame = 0
-            
 
     def move(self, position):
         """Move bullet and return current position"""
