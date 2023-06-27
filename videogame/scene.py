@@ -95,7 +95,7 @@ class InvadersGameScene(Scene):
             List[Octopus], List[Octopus]
         ]
         self.aliens = [[], [], [], [], []]
-        self.alien_move = 1
+        self.alien_move = 2
         self.alien_position_x = 0
         self.alien_position_y = 0
         self.alien_move_frame = 0
@@ -166,6 +166,64 @@ class InvadersGameScene(Scene):
                     bullet.explode()
                     # TODO: implement shield damage
                     continue
+
+        # Update alien positions
+        index = 1
+        first_alien: Alien
+        first_alien = None
+        last_alien: Alien
+        last_alien = None
+        met_edge: Alien
+        met_edge = None
+        for y, alien_row in enumerate(self.aliens):
+            for x, alien in enumerate(alien_row):
+                if self.alien_position_x == index:
+                    new_x = alien._position[0] + self.alien_move
+                    alien._position = (new_x, alien._position[1])
+                    if len(alien_row) - 1 == x:
+                        last_alien = alien
+                    elif x == 0:
+                        first_alien = alien
+                if self.alien_position_y == index:
+                    new_y = alien._position[1] + 8
+                    alien._position = (alien._position[0], new_y)
+
+                index += 1
+            if first_alien != None:
+                if first_alien._position[0] <= 0 + 16:
+                    if alien_row != []:
+                        met_edge = alien_row
+            if last_alien != None:
+                if last_alien._position[0] >= self._screen.get_width() - 16:
+                    if alien_row != []:
+                        met_edge = alien_row
+
+            if met_edge != None and alien_row != []:
+                alien = alien_row[-1]
+                alien._position = (alien._position[0], alien._position[1] + 8)
+
+        if met_edge != None:
+            self.alien_move *= -1
+            if self.alien_move < 0:
+                met_edge = [met_edge[-1]]
+            else:
+                met_edge = met_edge
+
+            for alien in met_edge:
+                new_x = alien._position[0] + self.alien_move * 2
+                new_y = alien._position[1] + 8
+                alien._position = (new_x, alien._position[1])
+
+            self.alien_position_y = sum(len(x) for x in self.aliens)
+
+        if self.alien_position_x == 0:
+            if self.frames % self.frame_rate() == 0:
+                self.alien_position_x = sum(len(x) for x in self.aliens)
+        else:
+            self.alien_position_x -= 1
+
+        if self.alien_position_y != 0:
+            self.alien_position_y -= 1
 
     def render_updates(self):
         """Render additional screen updates."""
