@@ -1,6 +1,7 @@
 """Scene objects for making games with PyGame."""
 
 import os
+import random
 from typing import List
 import pygame
 from videogame.sprites import (
@@ -106,15 +107,18 @@ class InvadersGameScene(Scene):
             self.shields.append(Shield((31+(31*(i*1.5)), 192)))
 
         for i in range(11):
-            self.aliens[0].append(Squid((i*16 + 24, 64)))
+            self.aliens[0].append(Squid((i*16 + 24, 64), (i, 0)))
 
         for i in range(2):
             for j in range(11):
-                self.aliens[i+1].append(Crab((j*16 + 24, 64+16*(i+1))))
+                self.aliens[i+1].append(Crab((j*16 + 24, 64+16*(i+1)), (j, i+1)))
 
         for i in range(2):
             for j in range(11):
-                self.aliens[i+3].append(Octopus((j*16 + 24, 64+32+16*(i+1))))
+                self.aliens[i+3].append(Octopus((j*16 + 24, 64+32+16*(i+1)), (j, i+3)))
+        
+        # bottom row at initial start of the game has line of sight of player to shoot
+        self.alien_line_of_sight = [alien.grid_position for alien in self.aliens[4]]
 
     def process_event(self, event):
         """Process game events."""
@@ -133,23 +137,32 @@ class InvadersGameScene(Scene):
 
         for alien_row in self.aliens:
             for alien in alien_row:
+                # make sure aliens only have 1 bullet on screen
+                if not any(bullet.is_player_owned == False for bullet in self.bullets):
+                    shooter_pos = random.choice(self.alien_line_of_sight)
+                    if alien.grid_position == shooter_pos:
+                        self.bullets.append(Bullet((alien._position[0]+6, alien._position[1]+8)))
+
                 if alien._explode_frame != 0:
                     done = alien.explode()
                     if done:
                         alien._explode_frame = 0
                         alien._is_alive = False
                     return
-                
-        if self.player.shooting:
-            # make sure player only has 1 bullet on screen
-            if not any(bullet.is_player_owned is True for bullet in self.bullets):
+        
+        # make sure player only has 1 bullet on screen
+        if not any(bullet.is_player_owned for bullet in self.bullets):
+            if self.player.shooting:
                 self.bullets.append(Bullet((self.player.position_x+7, 211), is_player_owned=True))
 
         for bullet in self.bullets:
             # move bullets
             position = bullet._position
             if bullet._explode_frame == 0:
-                position = bullet.move((0, -4))
+                if bullet.is_player_owned:
+                    position = bullet.move((0, -4))
+                else:
+                    position = bullet.move((0, 1))
             else:
                 done = bullet.explode()
                 if done:
@@ -161,10 +174,13 @@ class InvadersGameScene(Scene):
                     bullet.move((0, 4))
                 bullet.explode()
 
+            if position[1] > 231:
+                bullet.explode()
+
             # bullet collision check
             for alien_row in self.aliens:
                 for alien in alien_row:
-                    if alien.is_colliding(bullet):
+                    if bullet.is_player_owned and alien.is_colliding(bullet):
                         alien.explode()
                         self.bullets.remove(bullet)
                         return
@@ -174,8 +190,17 @@ class InvadersGameScene(Scene):
                     bullet.explode()
                     # TODO: implement shield damage
                     continue
-        
+
+            if self.player.is_colliding(bullet):
+                # self.player.explode()
+                bullet.explode()
+                print("ouch")
+
+        # alien movement, overly complicated, but in a nutshell,
+        # this allows one alien to move per frame. the less aliens
+        # on the screen, the faster the aliens move. this is awesome
         index = 1
+        new_los = None
         for alien_row in self.aliens:
             for alien in alien_row:
                 if self.alien_position_x == index:
@@ -187,13 +212,27 @@ class InvadersGameScene(Scene):
                     new_y = alien._position[1] + 8
                     alien._position = (alien._position[0], new_y)
                     self.alien_position_y -= 1
+
+                if alien._is_alive == True:
+                    if self.alien_line_of_sight[alien.grid_position[0]] == None:
+                        if new_los == None or new_los[1] < alien.grid_position[1]:
+                            new_los = alien.grid_position
+
                 index += 1
+
+        if new_los != None:
+            self.alien_line_of_sight.pop(new_los[0])
+            self.alien_line_of_sight.insert(new_los[0], new_los)
 
         if self.alien_position_x == 0:
             move_down = False
             for alien_row in self.aliens:
                 for alien in alien_row:
                     if alien._is_alive == False:
+                        if alien.grid_position in self.alien_line_of_sight:
+                            los_index = self.alien_line_of_sight.index(alien.grid_position)
+                            self.alien_line_of_sight.pop(los_index)
+                            self.alien_line_of_sight.insert(los_index, None)
                         alien_row.remove(alien)
                 
                 if len(alien_row) == 0:
@@ -204,10 +243,8 @@ class InvadersGameScene(Scene):
 
                 if first._position[0] < 16 - 8:
                     move_down = True
-                    break
                 elif last._position[0] > self._screen.get_width() - (16*2) + 8:
                     move_down = True
-                    break
 
             self.alien_position_x = sum(len(x) for x in self.aliens)
             if move_down:

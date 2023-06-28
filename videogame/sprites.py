@@ -10,7 +10,7 @@ class Sprite:
         self._position = position
         self._sheet = pygame.image.load(os.path.join(os.path.dirname(__file__), 'data', filename)).convert()
         self._rect = pygame.Rect((0, 0, 16, 8))
-        self._surf = pygame.Surface(self._rect.size).convert()
+        self._surf = pygame.Surface(self._rect.size)
 
     def draw(self, surf: pygame.Surface, position=(0, 0), relative=False):
         """Draw the sprite on a surface at position"""
@@ -94,18 +94,19 @@ class Player(Sprite):
         super().draw(surf, position, relative)
 
 class Alien(Sprite):
-    def __init__(self, filename, position):
+    def __init__(self, filename, position, grid_position):
         """Initialize the Alien."""
         super().__init__(filename, position)
         self._is_alive = True
         self._explode_frame = 0
         self._idle_frame = 0
+        self.grid_position = grid_position
 
     def anim(self):
         """Alternative between 2 alien frames"""
         if self._is_alive and self._explode_frame == 0:
             self._rect = pygame.Rect((16*self._idle_frame, 0, 16, 8))
-            self._surf = pygame.Surface(self._rect.size).convert()
+            self._surf = pygame.Surface(self._rect.size)
             if self._idle_frame == 0:
                 self._idle_frame = 1
             else:
@@ -117,7 +118,7 @@ class Alien(Sprite):
         if self._explode_frame == 0:
             self._rect = pygame.Rect((32, 0, 16, 8))
             # self._position = (self._position[0]-2, self._position[1])
-            self._surf = pygame.Surface(self._rect.size).convert()
+            self._surf = pygame.Surface(self._rect.size)
         
         self._explode_frame += 1
         return self._explode_frame == 15
@@ -128,26 +129,26 @@ class Alien(Sprite):
             super().draw(surf, position, relative)
 
 class Squid(Alien):
-    def __init__(self, position):
+    def __init__(self, position, grid_position):
         """Initialize the Squid alien."""
-        super().__init__('alien1.png', position)
+        super().__init__('alien1.png', position, grid_position)
 
 class Crab(Alien):
-    def __init__(self, position):
+    def __init__(self, position, grid_position):
         """Initialize the Crab alien."""
-        super().__init__('alien2.png', position)
+        super().__init__('alien2.png', position, grid_position)
 
 class Octopus(Alien):
-    def __init__(self, position):
+    def __init__(self, position, grid_position):
         """Initialize the Octopus alien."""
-        super().__init__('alien3.png', position)
+        super().__init__('alien3.png', position, grid_position)
 
-class Shield(Alien):
+class Shield(Sprite):
     def __init__(self, position):
         """Initialize the Shield."""
         super().__init__('shield.png', position)
         self._rect = pygame.Rect((0, 0, 24, 16))
-        self._surf = pygame.Surface(self._rect.size).convert()
+        self._surf = pygame.Surface(self._rect.size)
 
 class Bullet(Sprite):
     def __init__(self, position, type=0, is_player_owned=False):
@@ -157,7 +158,7 @@ class Bullet(Sprite):
         self._rect = pygame.Rect((type*4*3, 0, 3, 8))
         if self.is_player_owned:
             self._rect = pygame.Rect((14*3, 0, 3, 8))
-        self._surf = pygame.Surface(self._rect.size).convert()
+        self._surf = pygame.Surface(self._rect.size)
         self._type = type
         self._explode_frame = 0
         self._move_frame = 0
@@ -189,7 +190,7 @@ class Bullet(Sprite):
             else:
                 self._rect = pygame.Rect((3*15, 0, 0 if hidden else 8, 8))
                 self._position = (self._position[0]-2, self._position[1])
-            self._surf = pygame.Surface(self._rect.size).convert()
+            self._surf = pygame.Surface(self._rect.size)
         
         self._explode_frame += 1
         return self._explode_frame == 15
@@ -212,7 +213,7 @@ class Font(Sprite):
 
     def draw(self, surf: pygame.Surface, text="", position=(0, 0), relative=False):
         self._rect = pygame.Rect((0, 0, len(text)*8, 8))
-        self._surf = pygame.Surface(self._rect.size).convert()
+        self._surf = pygame.Surface(self._rect.size)
 
         for i, letter in enumerate(text):
             letter = letter.lower()
