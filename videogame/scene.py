@@ -84,6 +84,8 @@ class InvadersGameScene(Scene):
         super().__init__(screen, soundtrack)
         self.secret = False
 
+        self.score = 0
+        self.lives = 3
         self.player = Player()
 
         self.shields: List[Shield]
@@ -98,7 +100,6 @@ class InvadersGameScene(Scene):
         self.alien_move = 2
         self.alien_position_x = 0
         self.alien_position_y = 0
-        self.alien_move_frame = 0
 
         self.bullets: List[Bullet]
         self.bullets = []
@@ -137,7 +138,7 @@ class InvadersGameScene(Scene):
 
         for bullet in self.bullets:
             # move bullets
-            position = bullet._position
+            position = bullet.position
             if bullet._explode_frame == 0:
                 if bullet.is_player_owned:
                     position = bullet.move((0, -4))
@@ -163,6 +164,7 @@ class InvadersGameScene(Scene):
                     if bullet.is_player_owned and alien.is_colliding(bullet):
                         alien.explode()
                         self.bullets.remove(bullet)
+                        self.score += alien.points
                         return
 
             for shield in self.shields:
@@ -181,8 +183,8 @@ class InvadersGameScene(Scene):
                 # make sure aliens only have 1 bullet on screen
                 if not any(bullet.is_player_owned == False for bullet in self.bullets):
                     shooter_pos = random.choice(self.alien_line_of_sight)
-                    if alien.grid_position == shooter_pos:
-                        self.bullets.append(Bullet((alien._position[0]+6, alien._position[1]+8)))
+                    if alien.grid_position == shooter_pos and alien._is_alive:
+                        self.bullets.append(Bullet((alien.position[0]+6, alien.position[1]+8)))
 
                 if alien._explode_frame != 0:
                     done = alien.explode()
@@ -204,13 +206,13 @@ class InvadersGameScene(Scene):
         for alien_row in self.aliens:
             for alien in alien_row:
                 if self.alien_position_x == index:
-                    new_x = alien._position[0] + self.alien_move
-                    alien._position = (new_x, alien._position[1])
+                    new_x = alien.position[0] + self.alien_move
+                    alien.position = (new_x, alien.position[1])
                     self.alien_position_x -= 1
                     alien.anim()
                 if self.alien_position_y == index:
-                    new_y = alien._position[1] + 8
-                    alien._position = (alien._position[0], new_y)
+                    new_y = alien.position[1] + 8
+                    alien.position = (alien.position[0], new_y)
                     self.alien_position_y -= 1
 
                 if alien._is_alive == True:
@@ -241,9 +243,9 @@ class InvadersGameScene(Scene):
                 first = alien_row[0]
                 last = alien_row[-1]
 
-                if first._position[0] < 16 - 8:
+                if first.position[0] < 16 - 8:
                     move_down = True
-                elif last._position[0] > self._screen.get_width() - (16*2) + 8:
+                elif last.position[0] > self._screen.get_width() - (16*2) + 8:
                     move_down = True
 
             self.alien_position_x = sum(len(x) for x in self.aliens)
@@ -271,20 +273,20 @@ class InvadersGameScene(Scene):
     def draw(self):
         """Draw the scene."""
         super().draw()
-        Font().draw(self._screen, "SCORE<1> HI-SCORE SCORE<2>", (8, 8))
-        Font().draw(self._screen, "0000", (24, 24))
-        Font().draw(self._screen, "0000", (88, 24))
-        Font().draw(self._screen, "0000", (168, 24))
+        Font().draw(self._screen, (8, 8), text="SCORE<1> HI-SCORE SCORE<2>")
+        Font().draw(self._screen, (24, 24), str(self.score).zfill(4))
+        Font().draw(self._screen, (88, 24), "0000")
+        Font().draw(self._screen, (168, 24), "0000")
         if self.secret:
-            Font().draw(self._screen, "LULZSUN", (80, 32))
+            Font().draw(self._screen, (80, 32), "LULZSUN")
 
         bottom = pygame.Surface((self._screen.get_width(), 1))
         bottom.fill((255, 255, 255))
         self._screen.blit(bottom, (0, 239))
-        Font().draw(self._screen, "3", (8, 240))
+        Font().draw(self._screen, (8, 240), "3")
         Player().draw(self._screen, (24, 240))
         Player().draw(self._screen, (24+16, 240))
-        Font().draw(self._screen, "CREDIT 00", (136, 240))
+        Font().draw(self._screen, (136, 240), "CREDIT 00")
 
         # render player
         self.player.draw(self._screen, (self.player.position_x, 216))
