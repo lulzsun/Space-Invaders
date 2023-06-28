@@ -83,7 +83,6 @@ class InvadersGameScene(Scene):
         super().__init__(screen, soundtrack)
         self.secret = False
 
-        self.frames = 0
         self.player = Player()
 
         self.shields: List[Shield]
@@ -130,9 +129,17 @@ class InvadersGameScene(Scene):
 
     def update_scene(self):
         """Update the scene state."""
-        self.frames += 1
         super().update_scene()
 
+        for alien_row in self.aliens:
+            for alien in alien_row:
+                if alien._explode_frame != 0:
+                    done = alien.explode()
+                    if done:
+                        alien._explode_frame = 0
+                        alien_row.remove(alien)
+                    return
+                
         if self.player.shooting:
             # make sure player only has 1 bullet on screen
             if not any(bullet.is_player_owned is True for bullet in self.bullets):
@@ -159,7 +166,8 @@ class InvadersGameScene(Scene):
                 for alien in alien_row:
                     if alien.is_colliding(bullet):
                         alien.explode()
-                        continue
+                        self.bullets.remove(bullet)
+                        return
 
             for shield in self.shields:
                 if shield.is_colliding(bullet):
@@ -167,7 +175,6 @@ class InvadersGameScene(Scene):
                     # TODO: implement shield damage
                     continue
 
-        # Update alien positions
         index = 1
         first_alien: Alien
         first_alien = None
@@ -175,7 +182,7 @@ class InvadersGameScene(Scene):
         last_alien = None
         met_edge: Alien
         met_edge = None
-        for y, alien_row in enumerate(self.aliens):
+        for alien_row in self.aliens:
             for x, alien in enumerate(alien_row):
                 if self.alien_position_x == index:
                     new_x = alien._position[0] + self.alien_move
@@ -218,8 +225,7 @@ class InvadersGameScene(Scene):
             self.alien_position_y = sum(len(x) for x in self.aliens)
 
         if self.alien_position_x == 0:
-            if self.frames % self.frame_rate() == 0:
-                self.alien_position_x = sum(len(x) for x in self.aliens)
+            self.alien_position_x = sum(len(x) for x in self.aliens)
         else:
             self.alien_position_x -= 1
 

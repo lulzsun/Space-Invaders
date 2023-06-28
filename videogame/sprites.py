@@ -114,7 +114,7 @@ class Alien(Sprite):
             self._surf = pygame.Surface(self._rect.size).convert()
         
         self._explode_frame += 1
-        return self._explode_frame == 10
+        return self._explode_frame == 15
 
 class Squid(Alien):
     def __init__(self, position):
@@ -166,21 +166,22 @@ class Bullet(Sprite):
                 self._move_frame = 0
         return self._position
     
-    def explode(self, miss=False):
+    def explode(self, miss=False, hidden=False):
         """Play explosion animation."""
         """If miss is True, play a different sprite"""
+        """If hidden is True, don't show sprite"""
         """Return True when done"""
         if self._explode_frame == 0:
             if miss:
-                self._rect = pygame.Rect((3*12, 0, 6, 8))
+                self._rect = pygame.Rect((3*12, 0, 0 if hidden else 6, 8))
                 self._position = (self._position[0]-2, self._position[1])
             else:
-                self._rect = pygame.Rect((3*15, 0, 8, 8))
+                self._rect = pygame.Rect((3*15, 0, 0 if hidden else 8, 8))
                 self._position = (self._position[0]-2, self._position[1])
             self._surf = pygame.Surface(self._rect.size).convert()
         
         self._explode_frame += 1
-        return self._explode_frame == 10
+        return self._explode_frame == 15
 
     def draw(self, surf: pygame.Surface, position=(0, 0), relative=False):
         super().draw(surf, position, relative)
