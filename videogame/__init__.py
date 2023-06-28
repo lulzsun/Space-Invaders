@@ -1,3 +1,3 @@
-"""Init file for the PyGame demo."""
+"""Init file for the PyGame game."""
 
-__all__ = ["game", "rgbcolors", "scene"]
+__all__ = ["game", "scene", "sprites"]
