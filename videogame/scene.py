@@ -184,6 +184,7 @@ class InvadersGameScene(Scene):
                         last_alien = alien
                     elif x == 0:
                         first_alien = alien
+                    alien.anim()
                 if self.alien_position_y == index:
                     new_y = alien._position[1] + 8
                     alien._position = (alien._position[0], new_y)
