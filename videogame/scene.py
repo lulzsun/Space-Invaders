@@ -274,19 +274,19 @@ class InvadersGameScene(Scene):
         """Draw the scene."""
         super().draw()
         Font().draw(self._screen, (8, 8), text="SCORE<1> HI-SCORE SCORE<2>")
-        Font().draw(self._screen, (24, 24), str(self.score).zfill(4))
-        Font().draw(self._screen, (88, 24), "0000")
-        Font().draw(self._screen, (168, 24), "0000")
+        Font().draw(self._screen, (24, 24), text=str(self.score).zfill(4))
+        Font().draw(self._screen, (88, 24), text="0000")
+        Font().draw(self._screen, (168, 24), text="0000")
         if self.secret:
-            Font().draw(self._screen, (80, 32), "LULZSUN")
+            Font().draw(self._screen, (80, 32), text="LULZSUN")
 
         bottom = pygame.Surface((self._screen.get_width(), 1))
         bottom.fill((255, 255, 255))
         self._screen.blit(bottom, (0, 239))
-        Font().draw(self._screen, (8, 240), "3")
+        Font().draw(self._screen, (8, 240), text="3")
         Player().draw(self._screen, (24, 240))
         Player().draw(self._screen, (24+16, 240))
-        Font().draw(self._screen, (136, 240), "CREDIT 00")
+        Font().draw(self._screen, (136, 240), text="CREDIT 00")
 
         # render player
         self.player.draw(self._screen, (self.player.position_x, 216))
