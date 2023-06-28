@@ -31,6 +31,12 @@ class Sprite:
         # my "sprite" classes are not actually sprite objects, so instead
         # i am just temporarily creating the sprites to use collide_mask()
         # i am too stubborn to do things the right way, i may regret this later
+        if isinstance(self, Alien) and self._is_alive == False:
+            return False
+        
+        if isinstance(sprite, Alien) is Alien and sprite._is_alive == False:
+            return False
+
         real_sprite1 = pygame.sprite.Sprite()
         real_sprite1.image = self._surf
         real_sprite1.rect = pygame.Rect((
@@ -115,6 +121,11 @@ class Alien(Sprite):
         
         self._explode_frame += 1
         return self._explode_frame == 15
+    
+    def draw(self, surf: pygame.Surface, position=(0, 0), relative=False):
+        """Draw the sprite, only if alien is alive"""
+        if self._is_alive:
+            super().draw(surf, position, relative)
 
 class Squid(Alien):
     def __init__(self, position):

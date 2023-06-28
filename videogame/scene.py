@@ -114,7 +114,7 @@ class InvadersGameScene(Scene):
 
         for i in range(2):
             for j in range(11):
-                self.aliens[i+2].append(Octopus((j*16 + 24, 64+32+16*(i+1))))
+                self.aliens[i+3].append(Octopus((j*16 + 24, 64+32+16*(i+1))))
 
     def process_event(self, event):
         """Process game events."""
@@ -137,7 +137,7 @@ class InvadersGameScene(Scene):
                     done = alien.explode()
                     if done:
                         alien._explode_frame = 0
-                        alien_row.remove(alien)
+                        alien._is_alive = False
                     return
                 
         if self.player.shooting:
@@ -174,63 +174,45 @@ class InvadersGameScene(Scene):
                     bullet.explode()
                     # TODO: implement shield damage
                     continue
-
+        
         index = 1
-        first_alien: Alien
-        first_alien = None
-        last_alien: Alien
-        last_alien = None
-        met_edge: Alien
-        met_edge = None
         for alien_row in self.aliens:
-            for x, alien in enumerate(alien_row):
+            for alien in alien_row:
                 if self.alien_position_x == index:
                     new_x = alien._position[0] + self.alien_move
                     alien._position = (new_x, alien._position[1])
-                    if len(alien_row) - 1 == x:
-                        last_alien = alien
-                    elif x == 0:
-                        first_alien = alien
+                    self.alien_position_x -= 1
                     alien.anim()
                 if self.alien_position_y == index:
                     new_y = alien._position[1] + 8
                     alien._position = (alien._position[0], new_y)
-
+                    self.alien_position_y -= 1
                 index += 1
-            if first_alien != None:
-                if first_alien._position[0] < 16 - 8:
-                    if alien_row != []:
-                        met_edge = alien_row
-            if last_alien != None:
-                if last_alien._position[0] > self._screen.get_width() - (16*2) + 8:
-                    if alien_row != []:
-                        met_edge = alien_row
-
-            if met_edge != None and alien_row != []:
-                alien = alien_row[-1]
-                alien._position = (alien._position[0], alien._position[1] + 8)
-
-        if met_edge != None:
-            self.alien_move *= -1
-            if self.alien_move < 0:
-                met_edge = [met_edge[-1]]
-            else:
-                met_edge = met_edge
-
-            for alien in met_edge:
-                new_x = alien._position[0] + self.alien_move * 2
-                new_y = alien._position[1] + 8
-                alien._position = (new_x, alien._position[1])
-
-            self.alien_position_y = sum(len(x) for x in self.aliens)
 
         if self.alien_position_x == 0:
-            self.alien_position_x = sum(len(x) for x in self.aliens)
-        else:
-            self.alien_position_x -= 1
+            move_down = False
+            for alien_row in self.aliens:
+                for alien in alien_row:
+                    if alien._is_alive == False:
+                        alien_row.remove(alien)
+                
+                if len(alien_row) == 0:
+                    continue
 
-        if self.alien_position_y != 0:
-            self.alien_position_y -= 1
+                first = alien_row[0]
+                last = alien_row[-1]
+
+                if first._position[0] < 16 - 8:
+                    move_down = True
+                    break
+                elif last._position[0] > self._screen.get_width() - (16*2) + 8:
+                    move_down = True
+                    break
+
+            self.alien_position_x = sum(len(x) for x in self.aliens)
+            if move_down:
+                self.alien_position_y = sum(len(x) for x in self.aliens)
+                self.alien_move *= -1
 
     def render_updates(self):
         """Render additional screen updates."""
