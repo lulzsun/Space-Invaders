@@ -191,11 +191,11 @@ class InvadersGameScene(Scene):
 
                 index += 1
             if first_alien != None:
-                if first_alien._position[0] <= 0 + 16:
+                if first_alien._position[0] < 16 - 8:
                     if alien_row != []:
                         met_edge = alien_row
             if last_alien != None:
-                if last_alien._position[0] >= self._screen.get_width() - 16:
+                if last_alien._position[0] > self._screen.get_width() - (16*2) + 8:
                     if alien_row != []:
                         met_edge = alien_row
 
