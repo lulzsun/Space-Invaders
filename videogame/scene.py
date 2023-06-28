@@ -135,26 +135,6 @@ class InvadersGameScene(Scene):
         """Update the scene state."""
         super().update_scene()
 
-        for alien_row in self.aliens:
-            for alien in alien_row:
-                # make sure aliens only have 1 bullet on screen
-                if not any(bullet.is_player_owned == False for bullet in self.bullets):
-                    shooter_pos = random.choice(self.alien_line_of_sight)
-                    if alien.grid_position == shooter_pos:
-                        self.bullets.append(Bullet((alien._position[0]+6, alien._position[1]+8)))
-
-                if alien._explode_frame != 0:
-                    done = alien.explode()
-                    if done:
-                        alien._explode_frame = 0
-                        alien._is_alive = False
-                    return
-        
-        # make sure player only has 1 bullet on screen
-        if not any(bullet.is_player_owned for bullet in self.bullets):
-            if self.player.shooting:
-                self.bullets.append(Bullet((self.player.position_x+7, 211), is_player_owned=True))
-
         for bullet in self.bullets:
             # move bullets
             position = bullet._position
@@ -195,6 +175,26 @@ class InvadersGameScene(Scene):
                 # self.player.explode()
                 bullet.explode()
                 print("ouch")
+
+        for alien_row in self.aliens:
+            for alien in alien_row:
+                # make sure aliens only have 1 bullet on screen
+                if not any(bullet.is_player_owned == False for bullet in self.bullets):
+                    shooter_pos = random.choice(self.alien_line_of_sight)
+                    if alien.grid_position == shooter_pos:
+                        self.bullets.append(Bullet((alien._position[0]+6, alien._position[1]+8)))
+
+                if alien._explode_frame != 0:
+                    done = alien.explode()
+                    if done:
+                        alien._explode_frame = 0
+                        alien._is_alive = False
+                    return
+        
+        # make sure player only has 1 bullet on screen
+        if not any(bullet.is_player_owned for bullet in self.bullets):
+            if self.player.shooting:
+                self.bullets.append(Bullet((self.player.position_x+7, 211), is_player_owned=True))
 
         # alien movement, overly complicated, but in a nutshell,
         # this allows one alien to move per frame. the less aliens
