@@ -283,7 +283,7 @@ class InvadersGameScene(Scene):
             if self._anim_state == 0:
                 if len(self.shields) == 4:
                     self.shields.clear()
-                self.shields.append(Shield((31+(31*(len(self.shields)*1.5)), 192)))
+                self.shields.append(Shield((31+((24+22)*len(self.shields)), 192)))
                 if len(self.shields) == 4:
                     self._anim_state += 1
             elif self._anim_state == 1:
