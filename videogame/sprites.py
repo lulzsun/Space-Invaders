@@ -208,6 +208,22 @@ class Shield(Sprite):
         self._rect = pygame.Rect((0, 0, 24, 16))
         self._surf = pygame.Surface(self._rect.size)
 
+    def damage(self, sprite):
+        """Create damage to shield."""
+        mask = pygame.Surface.copy(sprite._sheet)
+        pygame.Surface.set_colorkey(mask, [0, 0, 0], pygame.RLEACCEL)
+        colorImage = pygame.Surface(mask.get_size()).convert_alpha()
+        colorImage.fill([255, 0, 0])
+        mask.blit(colorImage, (0,0), special_flags = pygame.BLEND_RGBA_MULT)
+        self._surf.blit(mask, (
+                sprite.position[0] - self.position[0], 
+                sprite.position[1] - self.position[1]
+            ), sprite._rect
+        )
+        pixels = pygame.PixelArray(self._surf.convert())
+        pixels.replace((255, 0, 0), (0, 0, 0))
+        self._sheet = pixels.make_surface()
+
 class Bullet(Sprite):
     """Bullet class for displaying bullet sprites"""
 
@@ -244,7 +260,7 @@ class Bullet(Sprite):
         If hidden is True, don't show sprite
         Return True when done"""
         if self._explode_frame == 0:
-            if miss:
+            if not miss:
                 self._rect = pygame.Rect((3*12, 0, 0 if hidden else 6, 8))
                 self.position = (self.position[0]-2, self.position[1])
             else:

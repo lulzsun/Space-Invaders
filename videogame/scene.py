@@ -18,9 +18,7 @@ from videogame.sprites import (
 class Scene:
     """Base class for the game."""
 
-    def __init__(self,
-                 screen: pygame.Surface,
-                 soundtrack=None):
+    def __init__(self, screen: pygame.Surface, soundtrack=None):
         """Scene initializer"""
         self._screen = screen
         self._frame_rate = 60
@@ -319,6 +317,7 @@ class InvadersGameScene(Scene):
                 if len(self.aliens[0]) == 11:
                     self._anim_state += 1
             elif self._anim_state == 6:
+                self._anim_state = 0
                 self.loading = False
                 self.alien_line_of_sight = [alien.grid_position for alien in self.aliens[4]]
             return
@@ -359,7 +358,7 @@ class InvadersGameScene(Scene):
             if position[1] < 34:
                 if bullet._explode_frame == 0:
                     bullet.move((0, 4))
-                bullet.explode()
+                bullet.explode(True)
 
             if position[1] > 231:
                 bullet.explode()
@@ -376,7 +375,7 @@ class InvadersGameScene(Scene):
             for shield in self.shields:
                 if shield.is_colliding(bullet):
                     bullet.explode()
-                    # TODO: implement shield damage
+                    shield.damage(bullet)
                     continue
 
             if self.player.is_colliding(bullet):
