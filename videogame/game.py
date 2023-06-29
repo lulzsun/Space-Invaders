@@ -55,7 +55,7 @@ class VideoGame:
 
 
 class SpaceInvadersGame(VideoGame):
-    """Show a colored window with a colored message and a polygon."""
+    """The bread and butter of the operation. The game."""
 
     def __init__(self):
         """Init the Pygame demo."""
@@ -71,8 +71,8 @@ class SpaceInvadersGame(VideoGame):
         screen = pygame.display.get_surface()
         self._scene_graph: List[Scene]
         self._scene_graph = [
-            # CreditScene(screen),
-            # TitleScene(screen),
+            CreditScene(screen),
+            TitleScene(screen),
             InvadersGameScene(screen)
         ]
 
@@ -90,7 +90,11 @@ class SpaceInvadersGame(VideoGame):
                 current_scene.draw()
                 current_scene.render_updates()
                 pygame.display.update()
-            current_scene.end_scene()
+            while not current_scene.end_scene() and not current_scene._is_exiting:
+                self._clock.tick(current_scene.frame_rate())
+                for event in pygame.event.get():
+                    Scene(self._screen).process_event(event)
+                pygame.display.update()
             if current_scene.is_exiting():
                 break
             current_scene = next(scene_iterator)

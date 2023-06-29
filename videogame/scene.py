@@ -31,14 +31,15 @@ class Scene:
 
         self._secret = False
         self._frames = 0
-        self._score = 0
+        self._p1_score = 0
         self._lives = 3
+        self._credit = 0
 
     def draw(self):
         """Draw the scene."""
         # Draw persistant UI
         Font().draw(self._screen, (8, 8), text="SCORE<1> HI-SCORE SCORE<2>")
-        Font().draw(self._screen, (24, 24), text=str(self._score).zfill(4))
+        Font().draw(self._screen, (24, 24), text=str(self._p1_score).zfill(4))
         Font().draw(self._screen, (88, 24), text="0000")
         Font().draw(self._screen, (168, 24), text="0000")
         if self._secret:
@@ -48,14 +49,21 @@ class Scene:
         for i in range(min(self._lives-1, 6)):
             Player().draw(self._screen, (24+(i*16), 240))
 
-        Font().draw(self._screen, (136, 240), text="CREDIT 00")
+        Font().draw(self._screen, (136, 240), 
+                    text=f"CREDIT {str(self._credit).zfill(2)}"
+        )
 
     def process_event(self, event):
         """Process a game event by the scene."""
         if event.type == pygame.QUIT:
             print("Good Bye!")
+            self.next_scene()
             self._is_exiting = True
             self._is_valid = False
+
+    def next_scene(self):
+        self._frames = 0
+        self._is_valid = False
 
     def is_exiting(self):
         return self._is_exiting
@@ -82,7 +90,7 @@ class Scene:
 
     def update_scene(self):
         """Update the scene state."""
-        self._screen = pygame.display.get_surface()
+        self._frames += 1
         self._screen.fill("black")
 
     def start_scene(self):
@@ -98,11 +106,22 @@ class Scene:
             pygame.mixer.music.play(-1)
 
     def end_scene(self):
-        """End the scene."""
+        """End the scene with a fading effect."""
+        self._frames += 10
         if self._soundtrack and pygame.mixer.music.get_busy():
             # Fade music out so there isn't an audible pop
             pygame.mixer.music.fadeout(500)
             pygame.mixer.music.stop()
+            self._soundtrack = None
+        
+        bottom = pygame.Surface((self._frames, 239-32))
+        bottom.fill((0, 0, 0))
+        self._screen.blit(bottom, (0, 32))
+
+        if self._frames >= self._screen.get_width():
+            self._frames = 0
+            return True
+        return False
 
     def frame_rate(self):
         """Return the frame rate the scene desires."""
@@ -119,7 +138,7 @@ class CreditScene(Scene):
         """Process a game event by the scene."""
         super().process_event(event)
         if event.type == pygame.KEYDOWN:
-            self._is_valid = False
+            self.next_scene()
 
     def draw(self):
         Font().draw(self._screen, (84, 64), text="CREDITS")
@@ -143,25 +162,54 @@ class TitleScene(Scene):
 
     def __init__(self, screen, soundtrack=None):
         super().__init__(screen, soundtrack)
+        self._constant_strings = [
+            "PLAY",
+            "SPACE  INVADERS       ",
+            "*SCORE ADVANCE TABLE*",
+            "=? MYSTERY",
+            "=30 POINTS",
+            "=20 POINTS",
+            "=10 POINTS"
+        ]
+        self._anim_state = 0
+        self._strings = [''] * len(self._constant_strings)
 
     def process_event(self, event):
         """Process a game event by the scene."""
         super().process_event(event)
         if event.type == pygame.KEYDOWN:
-            print("aa")
+            self.next_scene()
+
+    def update_scene(self):
+        """Update scene state."""
+        super().update_scene()
+
+        # animating the type writer effect
+        if self._frames % (self.frame_rate() / 12) == 0:
+            if self._anim_state != 2 and self._anim_state < len(self._constant_strings):
+                tmp = self._constant_strings[self._anim_state]
+                txt = tmp[:len(self._strings[self._anim_state])+1]
+                self._strings[self._anim_state] = txt
+                if self._strings[self._anim_state] == self._constant_strings[self._anim_state]:
+                    self._anim_state += 1
+            elif self._anim_state == 2:
+                self._strings[2] = self._constant_strings[2]
+                self._anim_state += 1
 
     def draw(self):
-        Font().draw(self._screen, (96, 64), text="PLAY")
-        Font().draw(self._screen, (56, 88), text="SPACE  INVADERS")
-        Font().draw(self._screen, (32, 120), text="*SCORE ADVANCE TABLE*")
-        Font().draw(self._screen, (80, 136), text="=? MYSTERY")
-        Font().draw(self._screen, (80, 152), text="=30 POINTS")
-        Font().draw(self._screen, (80, 168), text="=20 POINTS")
-        Font().draw(self._screen, (80, 184), text="=10 POINTS")
-        Cuttlefish((60, 136)).draw(self._screen, relative=True)
-        Squid((64, 152)).draw(self._screen, relative=True)
-        Crab((64, 168)).draw(self._screen, relative=True)
-        Octopus((64, 184)).draw(self._screen, relative=True)
+        """Draw the scene."""
+        Font().draw(self._screen, (96, 64), text=self._strings[0])
+        Font().draw(self._screen, (56, 88), text=self._strings[1])
+        Font().draw(self._screen, (32, 120), text=self._strings[2])
+        Font().draw(self._screen, (80, 136), text=self._strings[3])
+        Font().draw(self._screen, (80, 152), text=self._strings[4])
+        Font().draw(self._screen, (80, 168), text=self._strings[5])
+        Font().draw(self._screen, (80, 184), text=self._strings[6])
+        if self._strings[2] != '':
+            Cuttlefish((60, 136)).draw(self._screen, relative=True)
+            Squid((64, 152)).draw(self._screen, relative=True)
+            Crab((64, 168)).draw(self._screen, relative=True)
+            Octopus((64, 184)).draw(self._screen, relative=True)
         super().draw()
 
 
@@ -210,8 +258,8 @@ class InvadersGameScene(Scene):
         self.bullets: List[Bullet]
         self.bullets = []
 
-        # for i in range(4):
-        #     self.shields.append(Shield((31+(31*(i*1.5)), 192)))
+        for i in range(4):
+            self.shields.append(Shield((31+(31*(i*1.5)), 192)))
 
         for i in range(11):
             self.aliens[0].append(Squid((i*16 + 24, 64), (i, 0)))
@@ -233,7 +281,7 @@ class InvadersGameScene(Scene):
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN:
-                self.secret = not self.secret
+                self._secret = not self._secret
 
         self.player.move(event)
         self.player.shoot(event)
@@ -241,7 +289,6 @@ class InvadersGameScene(Scene):
     def update_scene(self):
         """Update the scene state."""
         super().update_scene()
-        self._frames += 1
 
         # check if all aliens are dead
         if len(self.aliens) == 0:
@@ -291,7 +338,7 @@ class InvadersGameScene(Scene):
                     if bullet.is_player_owned and alien.is_colliding(bullet):
                         alien.explode()
                         self.bullets.remove(bullet)
-                        self._score += alien.points
+                        self._p1_score += alien.points
                         return
 
             for shield in self.shields:
