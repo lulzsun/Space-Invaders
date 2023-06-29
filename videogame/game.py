@@ -1,12 +1,13 @@
 """Game objects to create PyGame based games."""
 
 import os
+from typing import List
 import warnings
 
 import pygame
 import pygame._sdl2 as sdl2
 
-from videogame.scene import InvadersGameScene
+from videogame.scene import CreditScene, InvadersGameScene, Scene, TitleScene
 
 
 def display_info():
@@ -45,25 +46,12 @@ class VideoGame:
 
         self._title = window_title
         pygame.display.set_caption(self._title)
-        self._game_is_over = False
+
         if not pygame.font:
             warnings.warn("Fonts disabled.", RuntimeWarning)
         if not pygame.mixer:
             warnings.warn("Sound disabled.", RuntimeWarning)
         self._scene_graph = None
-
-    @property
-    def scene_graph(self):
-        """Return the scene graph representing all the scenes in the game."""
-        return self._scene_graph
-
-    def build_scene_graph(self):
-        """Build the scene graph for the game."""
-        raise NotImplementedError
-
-    def run(self):
-        """Run the game; the main game loop."""
-        raise NotImplementedError
 
 
 class SpaceInvadersGame(VideoGame):
@@ -80,19 +68,19 @@ class SpaceInvadersGame(VideoGame):
 
     def build_scene_graph(self):
         """Build scene graph for the game demo."""
-        mp3 = os.path.join(self._data_dir, '03+Dawn+Metropolis.mp3')
+        screen = pygame.display.get_surface()
+        self._scene_graph: List[Scene]
         self._scene_graph = [
-            InvadersGameScene(
-                screen=pygame.display.get_surface(),
-                soundtrack=None
-            )
+            # CreditScene(screen),
+            # TitleScene(screen),
+            InvadersGameScene(screen)
         ]
 
     def run(self):
         """Run the game; the main game loop."""
-        scene_iterator = iter(self.scene_graph)
-        while not self._game_is_over:
-            current_scene = next(scene_iterator)
+        scene_iterator = iter(self._scene_graph)
+        current_scene = next(scene_iterator)
+        while True:
             current_scene.start_scene()
             while current_scene.is_valid():
                 self._clock.tick(current_scene.frame_rate())
@@ -103,6 +91,8 @@ class SpaceInvadersGame(VideoGame):
                 current_scene.render_updates()
                 pygame.display.update()
             current_scene.end_scene()
-            self._game_is_over = True
+            if current_scene.is_exiting():
+                break
+            current_scene = next(scene_iterator)
         pygame.quit()
         return 0

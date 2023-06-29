@@ -63,9 +63,14 @@ class Player(Sprite):
         self.velocity = 0
         self.position_x = 24
         self.shooting = False
+        self._explode_frame = 0
 
     def move(self, event):
         """Keyboard controls for moving"""
+        if self._explode_frame != 0:
+            self.velocity = 0
+            return
+
         if event.type == pygame.KEYDOWN:
             if event.key in {pygame.K_a, pygame.K_LEFT}:
                 if self.velocity != -1:
@@ -83,12 +88,38 @@ class Player(Sprite):
 
     def shoot(self, event):
         """Keyboard controls for shooting"""
+        if self._explode_frame != 0:
+            self.shooting = False
+            return
+
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 self.shooting = True
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_SPACE:
                 self.shooting = False
+
+    def explode(self):
+        """Play explosion animation.
+        Return True when done"""
+        self.velocity = 0
+        
+        if self._explode_frame < 15:
+            if self._explode_frame % 2 == 0:
+                self._rect = pygame.Rect((16, 0, 16, 8))
+            else:
+                self._rect = pygame.Rect((32, 0, 16, 8))
+        else:
+            self._rect = pygame.Rect((0, 0, 0, 0))
+            self._surf = pygame.Surface(self._rect.size)
+
+        self._explode_frame += 1
+        return self._explode_frame == 30
+    
+    def respawn(self):
+        self._rect = pygame.Rect((0, 0, 16, 8))
+        self._surf = pygame.Surface(self._rect.size)
+        self.position_x = 24
 
     def draw(self, surf: pygame.Surface, position=(0, 0), relative=False):
         """Draw player wit velocity/position"""
@@ -137,7 +168,7 @@ class Alien(Sprite):
 class Squid(Alien):
     """Squid class sprite, an alien varient"""
 
-    def __init__(self, position, grid_position):
+    def __init__(self, position, grid_position=(-1, -1)):
         """Initialize the Squid alien."""
         super().__init__('alien1.png', position, grid_position)
         self.points = 30
@@ -145,7 +176,7 @@ class Squid(Alien):
 class Crab(Alien):
     """Crab class sprite, an alien varient"""
 
-    def __init__(self, position, grid_position):
+    def __init__(self, position, grid_position=(-1, -1)):
         """Initialize the Crab alien."""
         super().__init__('alien2.png', position, grid_position)
         self.points = 20
@@ -153,10 +184,20 @@ class Crab(Alien):
 class Octopus(Alien):
     """Octopus class sprite, an alien varient"""
 
-    def __init__(self, position, grid_position):
+    def __init__(self, position, grid_position=(-1, -1)):
         """Initialize the Octopus alien."""
         super().__init__('alien3.png', position, grid_position)
         self.points = 10
+
+class Cuttlefish(Alien):
+    """Cuttlefish class sprite, an alien varient"""
+
+    def __init__(self, position, points=50):
+        """Initialize the Cuttlefish (UFO) alien."""
+        super().__init__('alien4.png', position, (-1, -1))
+        self._rect = pygame.Rect((0, 0, 24, 8))
+        self._surf = pygame.Surface(self._rect.size)
+        self.points = points
 
 class Shield(Sprite):
     """Shield class for displaying shield sprite"""

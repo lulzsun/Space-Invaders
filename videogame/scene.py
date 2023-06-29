@@ -1,11 +1,10 @@
 """Scene objects for making games with PyGame."""
 
-import os
 import random
 from typing import List
 import pygame
 from videogame.sprites import (
-    Alien, Bullet, Shield, Crab, Font, 
+    Bullet, Cuttlefish, Shield, Crab, Font, 
     Octopus, Player, Squid
 )
 
@@ -17,7 +16,7 @@ from videogame.sprites import (
 
 
 class Scene:
-    """Base class for making PyGame Scenes."""
+    """Base class for the game."""
 
     def __init__(self,
                  screen: pygame.Surface,
@@ -26,22 +25,40 @@ class Scene:
         self._screen = screen
         self._frame_rate = 60
         self._is_valid = True
+        self._is_exiting = False
         self._soundtrack = soundtrack
         self._render_updates = None
 
+        self._secret = False
+        self._frames = 0
+        self._score = 0
+        self._lives = 3
+
     def draw(self):
         """Draw the scene."""
-        self._screen = pygame.display.get_surface()
-        self._screen.fill("black")
+        # Draw persistant UI
+        Font().draw(self._screen, (8, 8), text="SCORE<1> HI-SCORE SCORE<2>")
+        Font().draw(self._screen, (24, 24), text=str(self._score).zfill(4))
+        Font().draw(self._screen, (88, 24), text="0000")
+        Font().draw(self._screen, (168, 24), text="0000")
+        if self._secret:
+            Font().draw(self._screen, (80, 32), text="LULZSUN")
+        Font().draw(self._screen, (8, 240), text=str(min(self._lives, 99)))
+        # Draw lives
+        for i in range(min(self._lives-1, 6)):
+            Player().draw(self._screen, (24+(i*16), 240))
+
+        Font().draw(self._screen, (136, 240), text="CREDIT 00")
 
     def process_event(self, event):
         """Process a game event by the scene."""
         if event.type == pygame.QUIT:
             print("Good Bye!")
+            self._is_exiting = True
             self._is_valid = False
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            print("Bye bye!")
-            self._is_valid = False
+
+    def is_exiting(self):
+        return self._is_exiting
 
     def is_valid(self):
         """Is the scene valid? A valid scene can be used to play a scene."""
@@ -49,9 +66,24 @@ class Scene:
 
     def render_updates(self):
         """Render all sprite updates."""
+        # create a color overlay in certain areas of the screen
+        # this mimics 1978 space invaders coloring
+        overlay_rect = pygame.Surface((self._screen.get_width(), 32), pygame.SRCALPHA)
+        overlay_rect.fill((254, 30, 30))
+        self._screen.blit(overlay_rect, (0, 32), special_flags=pygame.BLEND_RGB_MULT)
+
+        overlay_rect = pygame.Surface((self._screen.get_width(), 56), pygame.SRCALPHA)
+        overlay_rect.fill((30, 254, 30))
+        self._screen.blit(overlay_rect, (0, 184), special_flags=pygame.BLEND_RGB_MULT)
+
+        overlay_rect = pygame.Surface((111, 16), pygame.SRCALPHA)
+        overlay_rect.fill((30, 254, 30))
+        self._screen.blit(overlay_rect, (25, 240), special_flags=pygame.BLEND_RGB_MULT)
 
     def update_scene(self):
         """Update the scene state."""
+        self._screen = pygame.display.get_surface()
+        self._screen.fill("black")
 
     def start_scene(self):
         """Start the scene."""
@@ -76,16 +108,90 @@ class Scene:
         """Return the frame rate the scene desires."""
         return self._frame_rate
 
+
+class CreditScene(Scene):
+    """Scene of my credit scene unrelated to space invaders"""
+
+    def __init__(self, screen, soundtrack=None):
+        super().__init__(screen, soundtrack)
+
+    def process_event(self, event):
+        """Process a game event by the scene."""
+        super().process_event(event)
+        if event.type == pygame.KEYDOWN:
+            self._is_valid = False
+
+    def draw(self):
+        Font().draw(self._screen, (84, 64), text="CREDITS")
+        Font().draw(self._screen, (8, 88), text=
+                    "This game was developed by")
+        Font().draw(self._screen, (72, 104), text=
+                    "Jimmy Quach")
+        Font().draw(self._screen, (40, 128), text=
+                    "Summer 2023 CPSC385")
+        Font().draw(self._screen, (40, 144), text=
+                    "CAL STATE FULLERTON")
+        Font().draw(self._screen, (48, 184), text=
+                    "Press any button")
+        Font().draw(self._screen, (64, 200), text=
+                    "to continue")
+        super().draw()
+
+
+class TitleScene(Scene):
+    """Scene of space invaders' title screen(s)"""
+
+    def __init__(self, screen, soundtrack=None):
+        super().__init__(screen, soundtrack)
+
+    def process_event(self, event):
+        """Process a game event by the scene."""
+        super().process_event(event)
+        if event.type == pygame.KEYDOWN:
+            print("aa")
+
+    def draw(self):
+        Font().draw(self._screen, (96, 64), text="PLAY")
+        Font().draw(self._screen, (56, 88), text="SPACE  INVADERS")
+        Font().draw(self._screen, (32, 120), text="*SCORE ADVANCE TABLE*")
+        Font().draw(self._screen, (80, 136), text="=? MYSTERY")
+        Font().draw(self._screen, (80, 152), text="=30 POINTS")
+        Font().draw(self._screen, (80, 168), text="=20 POINTS")
+        Font().draw(self._screen, (80, 184), text="=10 POINTS")
+        Cuttlefish((60, 136)).draw(self._screen, relative=True)
+        Squid((64, 152)).draw(self._screen, relative=True)
+        Crab((64, 168)).draw(self._screen, relative=True)
+        Octopus((64, 184)).draw(self._screen, relative=True)
+        super().draw()
+
+
+class LeaderboardScene(Scene):
+    """Scene of leaderboard, not part of original game"""
+
+    def __init__(self, screen, soundtrack=None):
+        super().__init__(screen, soundtrack)
+
+    def process_event(self, event):
+        """Process a game event by the scene."""
+        super().process_event(event)
+        if event.type == pygame.KEYDOWN:
+            self._is_valid = False
+
+    def draw(self):
+        Font().draw(self._screen, (48, 184), text=
+                    "Press any button")
+        Font().draw(self._screen, (64, 200), text=
+                    "to continue")
+        super().draw()
+
+
 class InvadersGameScene(Scene):
     """Scene with the actual gameplay of space invaders"""
 
     def __init__(self, screen, soundtrack=None):
         """Initialize the scene."""
         super().__init__(screen, soundtrack)
-        self.secret = False
 
-        self.score = 0
-        self.lives = 3
         self.player = Player()
 
         self.shields: List[Shield]
@@ -104,8 +210,8 @@ class InvadersGameScene(Scene):
         self.bullets: List[Bullet]
         self.bullets = []
 
-        for i in range(4):
-            self.shields.append(Shield((31+(31*(i*1.5)), 192)))
+        # for i in range(4):
+        #     self.shields.append(Shield((31+(31*(i*1.5)), 192)))
 
         for i in range(11):
             self.aliens[0].append(Squid((i*16 + 24, 64), (i, 0)))
@@ -135,6 +241,27 @@ class InvadersGameScene(Scene):
     def update_scene(self):
         """Update the scene state."""
         super().update_scene()
+        self._frames += 1
+
+        # check if all aliens are dead
+        if len(self.aliens) == 0:
+            self.player.velocity = 0
+            self.bullets.clear()
+            return
+
+        # check if player was hit and play animation
+        if self.player._explode_frame != 0:
+            if self._frames % 5 == 0:
+                done = self.player.explode()
+                if done:
+                    self._lives -= 1
+                    if self._lives <= 0:
+                        return
+                    
+                    self.player._explode_frame = 0
+                    self._frames = 0
+                    self.player.respawn()
+            return
 
         for bullet in self.bullets:
             # move bullets
@@ -164,7 +291,7 @@ class InvadersGameScene(Scene):
                     if bullet.is_player_owned and alien.is_colliding(bullet):
                         alien.explode()
                         self.bullets.remove(bullet)
-                        self.score += alien.points
+                        self._score += alien.points
                         return
 
             for shield in self.shields:
@@ -174,9 +301,9 @@ class InvadersGameScene(Scene):
                     continue
 
             if self.player.is_colliding(bullet):
-                # self.player.explode()
-                bullet.explode()
-                print("ouch")
+                self.bullets.clear()
+                self.player.explode()
+                return
 
         for alien_row in self.aliens:
             for alien in alien_row:
@@ -253,40 +380,13 @@ class InvadersGameScene(Scene):
                 self.alien_position_y = sum(len(x) for x in self.aliens)
                 self.alien_move *= -1
 
-    def render_updates(self):
-        """Render additional screen updates."""
-        super().render_updates()
-        # create a color overlay in certain areas of the screen
-        # this mimics 1978 space invaders coloring
-        overlay_rect = pygame.Surface((self._screen.get_width(), 32), pygame.SRCALPHA)
-        overlay_rect.fill((254, 30, 30))
-        self._screen.blit(overlay_rect, (0, 32), special_flags=pygame.BLEND_RGB_MULT)
-
-        overlay_rect = pygame.Surface((self._screen.get_width(), 56), pygame.SRCALPHA)
-        overlay_rect.fill((30, 254, 30))
-        self._screen.blit(overlay_rect, (0, 184), special_flags=pygame.BLEND_RGB_MULT)
-
-        overlay_rect = pygame.Surface((111, 16), pygame.SRCALPHA)
-        overlay_rect.fill((30, 254, 30))
-        self._screen.blit(overlay_rect, (25, 240), special_flags=pygame.BLEND_RGB_MULT)
-
     def draw(self):
         """Draw the scene."""
-        super().draw()
-        Font().draw(self._screen, (8, 8), text="SCORE<1> HI-SCORE SCORE<2>")
-        Font().draw(self._screen, (24, 24), text=str(self.score).zfill(4))
-        Font().draw(self._screen, (88, 24), text="0000")
-        Font().draw(self._screen, (168, 24), text="0000")
-        if self.secret:
-            Font().draw(self._screen, (80, 32), text="LULZSUN")
 
+        # draw screen border
         bottom = pygame.Surface((self._screen.get_width(), 1))
         bottom.fill((255, 255, 255))
         self._screen.blit(bottom, (0, 239))
-        Font().draw(self._screen, (8, 240), text="3")
-        Player().draw(self._screen, (24, 240))
-        Player().draw(self._screen, (24+16, 240))
-        Font().draw(self._screen, (136, 240), text="CREDIT 00")
 
         # render player
         self.player.draw(self._screen, (self.player.position_x, 216))
@@ -303,3 +403,4 @@ class InvadersGameScene(Scene):
         # render bullets
         for bullet in self.bullets:
             bullet.draw(self._screen, relative=True)
+        super().draw()
