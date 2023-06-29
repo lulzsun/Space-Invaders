@@ -33,6 +33,7 @@ class Scene:
         self._frames = 0
         self._p1_score = 0
         self._lives = 3
+        self._level = 0
         self._credit = 0
 
     def draw(self):
@@ -240,6 +241,9 @@ class InvadersGameScene(Scene):
         """Initialize the scene."""
         super().__init__(screen, soundtrack)
 
+        self._anim_state = 0
+        self.loading = True
+
         self.player = Player()
 
         self.shields: List[Shield]
@@ -258,26 +262,12 @@ class InvadersGameScene(Scene):
         self.bullets: List[Bullet]
         self.bullets = []
 
-        for i in range(4):
-            self.shields.append(Shield((31+(31*(i*1.5)), 192)))
-
-        for i in range(11):
-            self.aliens[0].append(Squid((i*16 + 24, 64), (i, 0)))
-
-        for i in range(2):
-            for j in range(11):
-                self.aliens[i+1].append(Crab((j*16 + 24, 64+16*(i+1)), (j, i+1)))
-
-        for i in range(2):
-            for j in range(11):
-                self.aliens[i+3].append(Octopus((j*16 + 24, 64+32+16*(i+1)), (j, i+3)))
-        
-        # bottom row at initial start of the game has line of sight of player to shoot
-        self.alien_line_of_sight = [alien.grid_position for alien in self.aliens[4]]
-
     def process_event(self, event):
         """Process game events."""
         super().process_event(event)
+
+        if self.loading == True:
+            return
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN:
@@ -289,6 +279,49 @@ class InvadersGameScene(Scene):
     def update_scene(self):
         """Update the scene state."""
         super().update_scene()
+
+        # animating the loading effect
+        if self.loading == True:
+            if self._anim_state == 0:
+                if len(self.shields) == 4:
+                    self.shields.clear()
+                self.shields.append(Shield((31+(31*(len(self.shields)*1.5)), 192)))
+                if len(self.shields) == 4:
+                    self._anim_state += 1
+            elif self._anim_state == 1:
+                self.aliens[4].append(
+                    Octopus((len(self.aliens[4])*16 + 24, 128), (len(self.aliens[4]), 4))
+                )
+                if len(self.aliens[4]) == 11:
+                    self._anim_state += 1
+            elif self._anim_state == 2:
+                self.aliens[3].append(
+                    Octopus((len(self.aliens[3])*16 + 24, 112), (len(self.aliens[3]), 3))
+                )
+                if len(self.aliens[3]) == 11:
+                    self._anim_state += 1
+            elif self._anim_state == 3:
+                self.aliens[2].append(
+                    Crab((len(self.aliens[2])*16 + 24, 96), (len(self.aliens[2]), 2))
+                )
+                if len(self.aliens[2]) == 11:
+                    self._anim_state += 1
+            elif self._anim_state == 4:
+                self.aliens[1].append(
+                    Crab((len(self.aliens[1])*16 + 24, 80), (len(self.aliens[1]), 1))
+                )
+                if len(self.aliens[1]) == 11:
+                    self._anim_state += 1
+            elif self._anim_state == 5:
+                self.aliens[0].append(
+                    Squid((len(self.aliens[0])*16 + 24, 64), (len(self.aliens[0]), 0))
+                )
+                if len(self.aliens[0]) == 11:
+                    self._anim_state += 1
+            elif self._anim_state == 6:
+                self.loading = False
+                self.alien_line_of_sight = [alien.grid_position for alien in self.aliens[4]]
+            return
 
         # check if all aliens are dead
         if len(self.aliens) == 0:
@@ -304,7 +337,6 @@ class InvadersGameScene(Scene):
                     self._lives -= 1
                     if self._lives <= 0:
                         return
-                    
                     self.player._explode_frame = 0
                     self._frames = 0
                     self.player.respawn()
