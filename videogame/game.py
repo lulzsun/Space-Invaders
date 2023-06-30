@@ -99,8 +99,17 @@ class SpaceInvadersGame(VideoGame):
                 pygame.display.update()
             if current_scene.is_exiting():
                 break
+
+            hi_score = 0
+            if isinstance(current_scene, InvadersGameScene):
+                hi_score = current_scene._p1_score
+
             current_scene = next(scene_iterator)(self._screen)
-            if isinstance(current_scene, CreditScene): # skip credits
+
+            if isinstance(current_scene, LeaderboardScene):
+                current_scene.hi_score = hi_score
+
+            if isinstance(current_scene, CreditScene):
                 current_scene = next(scene_iterator)(self._screen)
         pygame.quit()
         return 0

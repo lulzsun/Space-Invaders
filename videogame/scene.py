@@ -3,6 +3,7 @@
 import random
 from typing import List
 import pygame
+from videogame import save_scores, load_scores
 from videogame.sprites import (
     Bullet, Cuttlefish, Shield, Crab, Font, 
     Octopus, Player, Squid
@@ -29,6 +30,7 @@ class Scene:
 
         self._secret = False
         self._frames = 0
+        self._hi_score = load_scores()[0][1]
         self._p1_score = 0
         self._lives = 3
         self._level = 0
@@ -39,7 +41,7 @@ class Scene:
         # Draw persistant UI
         Font().draw(self._screen, (8, 8), text="SCORE<1> HI-SCORE SCORE<2>")
         Font().draw(self._screen, (24, 24), text=str(self._p1_score).zfill(4))
-        Font().draw(self._screen, (88, 24), text="0000")
+        Font().draw(self._screen, (88, 24), text=str(self._hi_score).zfill(4))
         Font().draw(self._screen, (168, 24), text="0000")
         if self._secret:
             Font().draw(self._screen, (80, 32), text="LULZSUN")
@@ -217,18 +219,92 @@ class LeaderboardScene(Scene):
 
     def __init__(self, screen, soundtrack=None):
         super().__init__(screen, soundtrack)
+        self.hi_score = 0
+        self.current_name = "aaaa"
+        self.name_char_index = 0
+
+        self._anim_state = 0
+        self._title_txt = ""
+        self._leaderboard = load_scores()
+        self._top_5_txt = ['', '', '', '', '']
 
     def process_event(self, event):
         """Process a game event by the scene."""
         super().process_event(event)
-        if event.type == pygame.KEYDOWN:
-            self._is_valid = False
+        if self.name_char_index == 4:
+            self._leaderboard.append((self.current_name, self.hi_score))
+            save_scores(self._leaderboard)
+            return
+        current_char = self.current_name[self.name_char_index]
+        if event.type == pygame.KEYDOWN and self._top_5_txt[4] != "":
+            if event.key == pygame.K_SPACE:
+                self.name_char_index += 1
+                if self.name_char_index == 4:
+                    self.next_scene()
+            if event.key in {pygame.K_a, pygame.K_LEFT}:
+                if current_char == 'a':
+                    current_char = 'z'
+                else:
+                    current_char = chr(ord(current_char) - 1)
+                updated_name = (
+                    self.current_name[:self.name_char_index] +
+                    current_char +
+                    self.current_name[self.name_char_index+1:]
+                )
+                self.current_name = updated_name
+            if event.key in {pygame.K_d, pygame.K_RIGHT}:
+                if current_char == 'z':
+                    current_char = 'a'
+                else:
+                    current_char = chr(ord(current_char) + 1)
+                updated_name = (
+                    self.current_name[:self.name_char_index] +
+                    current_char +
+                    self.current_name[self.name_char_index+1:]
+                )
+                self.current_name = updated_name
+
+    def update_scene(self):
+        """Update scene state."""
+        super().update_scene()
+
+        # animating the type writer effect
+        if self._frames % (self.frame_rate() / 12) == 0:
+            txt = "* LEADER BOARD *"
+            if self._title_txt != txt:
+                self._title_txt = txt[:self._anim_state+1]
+                self._anim_state += 1
+                if self._title_txt == txt:
+                    self._anim_state = 0
+                return
+
+            if self._anim_state != 5:
+                i = self._anim_state
+                try:
+                    self._top_5_txt[i] = (
+                        f"{i+1}> {self._leaderboard[i][0]} - " +
+                        f"{str(self._leaderboard[i][1]).zfill(4)}"
+                    )
+                except:
+                    self._top_5_txt[i] = f"{i+1}> aaaa - 0000"
+            else:
+                return
+            self._anim_state += 1
 
     def draw(self):
-        Font().draw(self._screen, (48, 184), text=
-                    "Press any button")
-        Font().draw(self._screen, (64, 200), text=
-                    "to continue")
+        Font().draw(self._screen, (48, 64), text=self._title_txt)
+
+        for i, score in enumerate(self._top_5_txt):
+            Font().draw(self._screen, (56, 88+(i*16)), text=score)
+
+        if self._top_5_txt[4] != "":
+            Font().draw(self._screen, (56, 176+8), 
+                text=f"   {self.current_name} - {str(self.hi_score).zfill(4)}")
+            carat = pygame.Surface((8, 1))
+            carat.fill((255, 255, 255))
+            if self.name_char_index != 4:
+                self._screen.blit(carat, (79+(self.name_char_index*8), 194))
+            Font().draw(self._screen, (64, 208), text="Enter  name")
         super().draw()
 
 
