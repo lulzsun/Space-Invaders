@@ -26,6 +26,7 @@ class Scene:
         self._frames = 0
         self._hi_score = load_scores()[0][1]
         self._p1_score = 0
+        self._next_life = 0
         self._lives = 3
         self._level = 0
         self._credit = 0
@@ -460,6 +461,10 @@ class InvadersGameScene(Scene):
                         alien.explode()
                         self.bullets.remove(bullet)
                         self._p1_score += alien.points
+                        self._next_life += alien.points
+                        if self._next_life >= 1500:
+                            self._lives += 1
+                            self._next_life -= 1500
                         return
 
             for shield in self.shields:
