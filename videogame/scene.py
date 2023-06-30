@@ -1,3 +1,6 @@
+# Jimmy Quach
+# jminquach@csu.fullerton.edu
+# @lulzsun
 """Scene objects for making games with PyGame."""
 
 import random

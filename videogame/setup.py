@@ -1,3 +1,6 @@
+# Jimmy Quach
+# jminquach@csu.fullerton.edu
+# @lulzsun
 """ Simple setup.py """
 
 # Jimmy: I'm unsure why pylint is complaining about how it is unable

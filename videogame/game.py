@@ -1,3 +1,6 @@
+# Jimmy Quach
+# jminquach@csu.fullerton.edu
+# @lulzsun
 """Game objects to create PyGame based games."""
 
 import itertools

@@ -1,4 +1,7 @@
-"""Moduel of objects for playing sound."""
+# Jimmy Quach
+# jminquach@csu.fullerton.edu
+# @lulzsun
+"""Module of objects for playing sound."""
 
 import os
 import pygame

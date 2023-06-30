@@ -1,4 +1,7 @@
-"""Init file for the PyGame game."""
+# Jimmy Quach
+# jminquach@csu.fullerton.edu
+# @lulzsun
+"""Init file for the videogame module."""
 
 __all__ = ["game", "scene", "sprites"]
 

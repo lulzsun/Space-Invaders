@@ -1,3 +1,6 @@
+# Jimmy Quach
+# jminquach@csu.fullerton.edu
+# @lulzsun
 """Sprite objects for creating text and game entities."""
 
 import os
