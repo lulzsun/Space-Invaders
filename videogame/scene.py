@@ -45,7 +45,7 @@ class Scene:
         Font().draw(self._screen, (168, 24), text="0000")
         if self._secret:
             Font().draw(self._screen, (80, 32), text="LULZSUN")
-        Font().draw(self._screen, (8, 240), text=str(min(self._lives, 99)))
+        Font().draw(self._screen, (8, 240), text=str(max(min(self._lives, 99), 0)))
         # Draw lives
         for i in range(min(self._lives-1, 6)):
             Player().draw(self._screen, (24+(i*16), 240))
@@ -399,8 +399,21 @@ class InvadersGameScene(Scene):
                 self.alien_line_of_sight = [alien.grid_position for alien in self.aliens[4]]
             return
 
+        # check if player was hit and play animation
+        if self.player._explode_frame != 0:
+            if self._frames % 5 == 0:
+                done = self.player.explode()
+                if done:
+                    self._lives -= 1
+                    self.player._explode_frame = 0
+                    self._frames = 0
+                    if self._lives <= 0:
+                        return
+                    self.player.respawn()
+            return
+
         # check for gameover and play gameover animation
-        if self._lives == 0:
+        if self._lives <= 0:
             txt = "GAME OVER               "
             if self._frames % (self.frame_rate() / 12) == 0:
                 self.game_over_txt = txt[:self._anim_state+1]
@@ -422,19 +435,6 @@ class InvadersGameScene(Scene):
                 self.alien_position_y = 0
                 self._level += 1
                 self.loading = True
-            return
-
-        # check if player was hit and play animation
-        if self.player._explode_frame != 0:
-            if self._frames % 5 == 0:
-                done = self.player.explode()
-                if done:
-                    self._lives -= 1
-                    if self._lives <= 0:
-                        return
-                    self.player._explode_frame = 0
-                    self._frames = 0
-                    self.player.respawn()
             return
 
         for bullet in self.bullets:
@@ -481,6 +481,17 @@ class InvadersGameScene(Scene):
 
         for alien_row in self.aliens:
             for alien in alien_row:
+                # check if alien passed y-axis limit (gameover)
+                if alien.position[1] >= 216:
+                    self._lives = 0
+                    self.player.explode()
+                    return
+
+                # check if alien collided into a shield
+                for shield in self.shields:
+                    if shield.is_colliding(alien):
+                        shield.damage(alien)
+
                 # make sure aliens only have 1 bullet on screen
                 if not any(bullet.is_player_owned == False for bullet in self.bullets):
                     shooter_pos = random.choice(self.alien_line_of_sight)
