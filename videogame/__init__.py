@@ -12,7 +12,7 @@ def save_scores(leaderboard):
 def load_scores():
     """Read the contents of 'leaderboard.pkl',
     decode it, and return it"""
-    leaderboard = [("aaaa", 0)]
+    leaderboard = [("aaa", 0)]
     try:
         with open('leaderboard.pkl', 'rb') as file_handle:
             leaderboard = pickle.load(file_handle)

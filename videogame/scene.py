@@ -10,12 +10,6 @@ from videogame.sprites import (
 )
 
 
-# If you're interested in using abstract base classes, feel free to rewrite
-# these classes.
-# For more information about Python Abstract Base classes, see
-# https://docs.python.org/3.8/library/abc.html
-
-
 class Scene:
     """Base class for the game."""
 
@@ -220,7 +214,7 @@ class LeaderboardScene(Scene):
     def __init__(self, screen, soundtrack=None):
         super().__init__(screen, soundtrack)
         self.hi_score = 0
-        self.current_name = "aaaa"
+        self.current_name = "aaa"
         self.name_char_index = 0
 
         self._anim_state = 0
@@ -231,7 +225,7 @@ class LeaderboardScene(Scene):
     def process_event(self, event):
         """Process a game event by the scene."""
         super().process_event(event)
-        if self.name_char_index == 4:
+        if self.name_char_index == 3:
             self._leaderboard.append((self.current_name, self.hi_score))
             save_scores(self._leaderboard)
             return
@@ -239,7 +233,7 @@ class LeaderboardScene(Scene):
         if event.type == pygame.KEYDOWN and self._top_5_txt[4] != "":
             if event.key == pygame.K_SPACE:
                 self.name_char_index += 1
-                if self.name_char_index == 4:
+                if self.name_char_index == 3:
                     self.next_scene()
             if event.key in {pygame.K_a, pygame.K_LEFT}:
                 if current_char == 'a':
@@ -282,11 +276,11 @@ class LeaderboardScene(Scene):
                 i = self._anim_state
                 try:
                     self._top_5_txt[i] = (
-                        f"{i+1}> {self._leaderboard[i][0]} - " +
+                        f"{i+1}   {self._leaderboard[i][0]}   " +
                         f"{str(self._leaderboard[i][1]).zfill(4)}"
                     )
                 except:
-                    self._top_5_txt[i] = f"{i+1}> aaaa - 0000"
+                    self._top_5_txt[i] = f"{i+1}   aaa   0000"
             else:
                 return
             self._anim_state += 1
@@ -299,11 +293,11 @@ class LeaderboardScene(Scene):
 
         if self._top_5_txt[4] != "":
             Font().draw(self._screen, (56, 176+8), 
-                text=f"   {self.current_name} - {str(self.hi_score).zfill(4)}")
+                text=f"    {self.current_name}   {str(self.hi_score).zfill(4)}")
             carat = pygame.Surface((8, 1))
             carat.fill((255, 255, 255))
-            if self.name_char_index != 4:
-                self._screen.blit(carat, (79+(self.name_char_index*8), 194))
+            if self.name_char_index != 3:
+                self._screen.blit(carat, (87+(self.name_char_index*8), 194))
             Font().draw(self._screen, (64, 208), text="Enter  name")
         super().draw()
 
