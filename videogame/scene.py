@@ -4,6 +4,9 @@ import random
 from typing import List
 import pygame
 from videogame import save_scores, load_scores
+from videogame.sound import (
+    BGM, DeathSFX, ExplodeSFX, ShootSFX
+)
 from videogame.sprites import (
     Bullet, Cuttlefish, Shield, Crab, Font, 
     Octopus, Player, Squid
@@ -329,6 +332,8 @@ class InvadersGameScene(Scene):
         self.alien_position_x = 0
         self.alien_position_y = 0
 
+        self.BGM = BGM()
+
         self.bullets: List[Bullet]
         self.bullets = []
 
@@ -424,6 +429,8 @@ class InvadersGameScene(Scene):
             self.bullets.clear()
             # reseting the game
             if self._frames % self.frame_rate() == 0:
+                self._frames = 0
+                self.BGM = BGM()
                 self.player = Player()
                 self.alien_move = 2
                 self.alien_position_x = 0
@@ -431,6 +438,12 @@ class InvadersGameScene(Scene):
                 self._level += 1
                 self.loading = True
             return
+
+        # play BGM
+        if self._frames % self.BGM.timing == 0:
+            changed = self.BGM.play((5+sum(len(x) for x in self.aliens)))
+            if changed == True:
+                self._frames = 0
 
         for bullet in self.bullets:
             # move bullets
@@ -458,6 +471,7 @@ class InvadersGameScene(Scene):
             for alien_row in self.aliens:
                 for alien in alien_row:
                     if bullet.is_player_owned and alien.is_colliding(bullet):
+                        ExplodeSFX().play()
                         alien.explode()
                         self.bullets.remove(bullet)
                         self._p1_score += alien.points
@@ -474,6 +488,7 @@ class InvadersGameScene(Scene):
                     continue
 
             if self.player.is_colliding(bullet):
+                DeathSFX().play()
                 self.bullets.clear()
                 self.player.explode()
                 return
@@ -502,12 +517,14 @@ class InvadersGameScene(Scene):
                     if done:
                         alien._explode_frame = 0
                         alien._is_alive = False
-                        self._frames = 0
+                        if sum(len(x) for x in self.aliens) == 0:
+                            self._frames = 0
                     return
         
         # make sure player only has 1 bullet on screen
         if not any(bullet.is_player_owned for bullet in self.bullets):
             if self.player.shooting:
+                ShootSFX().play()
                 self.bullets.append(Bullet((self.player.position_x+7, 211), is_player_owned=True))
 
         # alien movement, overly complicated, but in a nutshell,
