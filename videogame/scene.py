@@ -462,7 +462,7 @@ class InvadersGameScene(Scene):
             self.player.velocity = 0
             self.bullets.clear()
             # reseting the game
-            if self._frames % self.frame_rate() == 0:
+            if self._frames % (self.frame_rate() * 2) == 0:
                 self._frames = 0
                 self.bgm = BGM()
                 self.player = Player()
