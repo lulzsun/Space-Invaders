@@ -132,7 +132,7 @@ class Scene:
 
 
 class CreditScene(Scene):
-    """Scene of my credit scene unrelated to space invaders"""
+    """Scene of my credits unrelated to space invaders"""
 
     def process_event(self, event):
         """Process a game event by the scene."""
@@ -141,19 +141,46 @@ class CreditScene(Scene):
             self.next_scene()
 
     def draw(self):
-        Font().draw(self._screen, (84, 64), text="CREDITS")
+        Font().draw(self._screen, (68, 64), text="* CREDITS *")
         Font().draw(self._screen, (8, 88), text=
                     "This game was developed by")
-        Font().draw(self._screen, (72, 104), text=
-                    "Jimmy Quach")
-        Font().draw(self._screen, (40, 128), text=
-                    "Summer 2023 CPSC385")
-        Font().draw(self._screen, (40, 144), text=
-                    "CAL STATE FULLERTON")
-        Font().draw(self._screen, (48, 184), text=
+        Font().draw(self._screen, (64, 104), text=
+                    "Jimmy  Quach")
+        Font().draw(self._screen, (40-8, 128), text=
+                    "Summer 2023 CPSC 385")
+        Font().draw(self._screen, (40-8, 144), text=
+                    "CAL STATE  FULLERTON")
+        Font().draw(self._screen, (48, 192), text=
                     "Press any button")
-        Font().draw(self._screen, (64, 200), text=
-                    "to continue")
+        Font().draw(self._screen, (64, 208), text=
+                    "to  continue")
+        super().draw()
+
+class ControlsScene(Scene):
+    """Scene of my controls unrelated to space invaders"""
+
+    def process_event(self, event):
+        """Process a game event by the scene."""
+        super().process_event(event)
+        if event.type == pygame.KEYDOWN:
+            self.next_scene()
+
+    def draw(self):
+        Font().draw(self._screen, (60, 64), text="* CONTROLS *")
+        Font().draw(self._screen, (76, 88), text=
+                    "Movement")
+        Font().draw(self._screen, (80, 104), text=
+                    "<A> <D>")
+        Font().draw(self._screen, (8, 120), text=
+                    "<LEFT ARROW> <RIGHT ARROW>")
+        Font().draw(self._screen, (88, 144), text=
+                    "Shoot")
+        Font().draw(self._screen, (80, 160), text=
+                    "<SPACE>")
+        Font().draw(self._screen, (48, 192), text=
+                    "Press any button")
+        Font().draw(self._screen, (64, 208), text=
+                    "to  continue")
         super().draw()
 
 

@@ -11,7 +11,7 @@ import pygame
 import pygame._sdl2 as sdl2
 
 from videogame.scene import (
-    CreditScene, InvadersGameScene,
+    ControlsScene, CreditScene, InvadersGameScene,
     LeaderboardScene, Scene, TitleScene
 )
 
@@ -51,16 +51,17 @@ class SpaceInvadersGame():
     def build_scene_graph(self):
         """Build scene graph for the game demo."""
         self._scene_graph = [
-            CreditScene,
-            TitleScene,
+            CreditScene(self._screen), # i have no idea but
+            ControlsScene,             # without this, we
+            TitleScene,                # would get seg faults...
             InvadersGameScene,
-            LeaderboardScene
+            LeaderboardScene,
         ]
 
     def run(self):
         """Run the game; the main game loop."""
-        scene_iterator = itertools.cycle(self._scene_graph)
-        current_scene = next(scene_iterator)(self._screen)
+        index = 0
+        current_scene = self._scene_graph[0]
         while True:
             current_scene.start_scene()
             while current_scene.is_valid():
@@ -83,12 +84,11 @@ class SpaceInvadersGame():
             if isinstance(current_scene, InvadersGameScene):
                 hi_score = current_scene.p1_score
 
-            current_scene = next(scene_iterator)(self._screen)
-
+            if isinstance(current_scene, LeaderboardScene):
+                index = 1
+            index += 1
+            current_scene = self._scene_graph[index](self._screen)
             if isinstance(current_scene, LeaderboardScene):
                 current_scene.hi_score = hi_score
-
-            if isinstance(current_scene, CreditScene):
-                current_scene = next(scene_iterator)(self._screen)
         pygame.quit()
         return 0
