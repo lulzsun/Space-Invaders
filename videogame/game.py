@@ -1,13 +1,16 @@
 """Game objects to create PyGame based games."""
 
+import itertools
 import os
-from typing import List
 import warnings
 
 import pygame
 import pygame._sdl2 as sdl2
 
-from videogame.scene import CreditScene, InvadersGameScene, Scene, TitleScene
+from videogame.scene import (
+    CreditScene, InvadersGameScene, 
+    LeaderboardScene, Scene, TitleScene
+)
 
 
 def display_info():
@@ -68,18 +71,17 @@ class SpaceInvadersGame(VideoGame):
 
     def build_scene_graph(self):
         """Build scene graph for the game demo."""
-        screen = pygame.display.get_surface()
-        self._scene_graph: List[Scene]
         self._scene_graph = [
-            CreditScene(screen),
-            TitleScene(screen),
-            InvadersGameScene(screen)
+            CreditScene,
+            TitleScene,
+            InvadersGameScene,
+            LeaderboardScene
         ]
 
     def run(self):
         """Run the game; the main game loop."""
-        scene_iterator = iter(self._scene_graph)
-        current_scene = next(scene_iterator)
+        scene_iterator = itertools.cycle(self._scene_graph)
+        current_scene = next(scene_iterator)(self._screen)
         while True:
             current_scene.start_scene()
             while current_scene.is_valid():
@@ -97,6 +99,8 @@ class SpaceInvadersGame(VideoGame):
                 pygame.display.update()
             if current_scene.is_exiting():
                 break
-            current_scene = next(scene_iterator)
+            current_scene = next(scene_iterator)(self._screen)
+            if isinstance(current_scene, CreditScene): # skip credits
+                current_scene = next(scene_iterator)(self._screen)
         pygame.quit()
         return 0
