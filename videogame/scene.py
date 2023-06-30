@@ -5,7 +5,7 @@ from typing import List
 import pygame
 from videogame import save_scores, load_scores
 from videogame.sound import (
-    BGM, DeathSFX, ExplodeSFX, ShootSFX
+    BGM, DeathSFX, ExplodeSFX, PowerUpSFX, ShootSFX
 )
 from videogame.sprites import (
     Bullet, Cuttlefish, Shield, Crab, Font, 
@@ -477,6 +477,7 @@ class InvadersGameScene(Scene):
                         self._p1_score += alien.points
                         self._next_life += alien.points
                         if self._next_life >= 1500:
+                            PowerUpSFX().play()
                             self._lives += 1
                             self._next_life -= 1500
                         return

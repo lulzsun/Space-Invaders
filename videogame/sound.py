@@ -45,6 +45,12 @@ class ExplodeSFX(Sound):
     def __init__(self):
         super().__init__(1, "sfx_sounds_interaction25.wav")
 
+
 class DeathSFX(Sound):
     def __init__(self):
-        super().__init__(1, "sfx_sounds_interaction26.wav")
+        super().__init__(1, "sfx_exp_medium4.wav")
+
+
+class PowerUpSFX(Sound):
+    def __init__(self):
+        super().__init__(2, "sfx_sounds_pause6_in.wav")
