@@ -3,6 +3,7 @@
 import os
 import pygame
 
+
 class Sound:
     """Base class for making sound."""
     def __init__(self, channel=0, filename=""):
@@ -10,9 +11,11 @@ class Sound:
         self._channel = channel
 
     def filepath(self):
+        """Return full file path of sound file"""
         return os.path.join(os.path.dirname(__file__), 'data', self._filename)
 
     def play(self):
+        """Play sound file, stop sound if one is already playing"""
         pygame.mixer.Channel(self._channel).stop()
         pygame.mixer.Channel(self._channel).play(pygame.mixer.Sound(self.filepath()))
 
@@ -37,20 +40,24 @@ class BGM(Sound):
 
 
 class ShootSFX(Sound):
+    """Player shooting sound effect"""
     def __init__(self):
         super().__init__(1, "sfx_wpn_laser9.wav")
 
 
 class ExplodeSFX(Sound):
+    """Alien exploding/death sound effect"""
     def __init__(self):
         super().__init__(1, "sfx_sounds_interaction25.wav")
 
 
 class DeathSFX(Sound):
+    """Player exploding/death sound effect"""
     def __init__(self):
         super().__init__(1, "sfx_exp_medium4.wav")
 
 
 class PowerUpSFX(Sound):
+    """Player life gain sound effect"""
     def __init__(self):
         super().__init__(2, "sfx_sounds_pause6_in.wav")

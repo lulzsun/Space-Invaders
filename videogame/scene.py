@@ -5,14 +5,17 @@ from typing import List
 import pygame
 from videogame import save_scores, load_scores
 from videogame.sound import (
-    BGM, DeathSFX, ExplodeSFX, PowerUpSFX, ShootSFX
+    BGM, DeathSFX, ExplodeSFX,
+    PowerUpSFX, ShootSFX
 )
 from videogame.sprites import (
-    Bullet, Cuttlefish, Shield, Crab, Font, 
-    Octopus, Player, Squid
+    Bullet, Cuttlefish, Shield, Crab,
+    Font, Octopus, Player, Squid
 )
 
 
+# I know what I'm doing, linter.
+# pylint: disable-next=too-many-instance-attributes
 class Scene:
     """Base class for the game."""
 
@@ -21,14 +24,14 @@ class Scene:
         self._screen = screen
         self._frame_rate = 60
         self._is_valid = True
-        self._is_exiting = False
+        self.is_exiting = False
         self._soundtrack = soundtrack
         self._render_updates = None
 
         self._secret = False
         self._frames = 0
         self._hi_score = load_scores()[0][1]
-        self._p1_score = 0
+        self.p1_score = 0
         self._next_life = 0
         self._lives = 3
         self._level = 0
@@ -38,7 +41,7 @@ class Scene:
         """Draw the scene."""
         # Draw persistant UI
         Font().draw(self._screen, (8, 8), text="SCORE<1> HI-SCORE SCORE<2>")
-        Font().draw(self._screen, (24, 24), text=str(self._p1_score).zfill(4))
+        Font().draw(self._screen, (24, 24), text=str(self.p1_score).zfill(4))
         Font().draw(self._screen, (88, 24), text=str(self._hi_score).zfill(4))
         Font().draw(self._screen, (168, 24), text="0000")
         if self._secret:
@@ -48,7 +51,7 @@ class Scene:
         for i in range(min(self._lives-1, 6)):
             Player().draw(self._screen, (24+(i*16), 240))
 
-        Font().draw(self._screen, (136, 240), 
+        Font().draw(self._screen, (136, 240),
                     text=f"CREDIT {str(self._credit).zfill(2)}"
         )
 
@@ -57,15 +60,13 @@ class Scene:
         if event.type == pygame.QUIT:
             print("Good Bye!")
             self.next_scene()
-            self._is_exiting = True
+            self.is_exiting = True
             self._is_valid = False
 
     def next_scene(self):
+        """Prepare for the next scene."""
         self._frames = 0
         self._is_valid = False
-
-    def is_exiting(self):
-        return self._is_exiting
 
     def is_valid(self):
         """Is the scene valid? A valid scene can be used to play a scene."""
@@ -112,7 +113,7 @@ class Scene:
             pygame.mixer.music.fadeout(500)
             pygame.mixer.music.stop()
             self._soundtrack = None
-        
+
         bottom = pygame.Surface((self._frames, 239-32))
         bottom.fill((0, 0, 0))
         self._screen.blit(bottom, (0, 32))
@@ -129,9 +130,6 @@ class Scene:
 
 class CreditScene(Scene):
     """Scene of my credit scene unrelated to space invaders"""
-
-    def __init__(self, screen, soundtrack=None):
-        super().__init__(screen, soundtrack)
 
     def process_event(self, event):
         """Process a game event by the scene."""
@@ -283,7 +281,7 @@ class LeaderboardScene(Scene):
                         f"{i+1}   {self._leaderboard[i][0]}   " +
                         f"{str(self._leaderboard[i][1]).zfill(4)}"
                     )
-                except:
+                except IndexError:
                     self._top_5_txt[i] = f"{i+1}   aaa   0000"
             else:
                 return
@@ -296,7 +294,7 @@ class LeaderboardScene(Scene):
             Font().draw(self._screen, (56, 88+(i*16)), text=score)
 
         if self._top_5_txt[4] != "":
-            Font().draw(self._screen, (56, 176+8), 
+            Font().draw(self._screen, (56, 176+8),
                 text=f"    {self.current_name}   {str(self.hi_score).zfill(4)}")
             carat = pygame.Surface((8, 1))
             carat.fill((255, 255, 255))
@@ -306,6 +304,8 @@ class LeaderboardScene(Scene):
         super().draw()
 
 
+# I know what I'm doing, linter.
+# pylint: disable-next=too-many-instance-attributes
 class InvadersGameScene(Scene):
     """Scene with the actual gameplay of space invaders"""
 
@@ -331,8 +331,9 @@ class InvadersGameScene(Scene):
         self.alien_move = 2
         self.alien_position_x = 0
         self.alien_position_y = 0
+        self.alien_line_of_sight = []
 
-        self.BGM = BGM()
+        self.bgm = BGM()
 
         self.bullets: List[Bullet]
         self.bullets = []
@@ -341,7 +342,7 @@ class InvadersGameScene(Scene):
         """Process game events."""
         super().process_event(event)
 
-        if self.loading == True:
+        if self.loading is True:
             return
 
         if event.type == pygame.KEYDOWN:
@@ -351,12 +352,14 @@ class InvadersGameScene(Scene):
         self.player.move(event)
         self.player.shoot(event)
 
+    # Linter, please shut up. Sincerely, lulzsun
+    # pylint: disable-next=too-many-return-statements,too-many-branches,too-many-statements,too-many-locals
     def update_scene(self):
         """Update the scene state."""
         super().update_scene()
 
         # animating the loading effect
-        if self.loading == True:
+        if self.loading is True:
             if self._anim_state == 0:
                 if len(self.shields) == 4:
                     self.shields.clear()
@@ -400,12 +403,12 @@ class InvadersGameScene(Scene):
             return
 
         # check if player was hit and play animation
-        if self.player._explode_frame != 0:
+        if self.player.explode_frame != 0:
             if self._frames % 5 == 0:
                 done = self.player.explode()
                 if done:
                     self._lives -= 1
-                    self.player._explode_frame = 0
+                    self.player.explode_frame = 0
                     self._frames = 0
                     if self._lives <= 0:
                         return
@@ -430,7 +433,7 @@ class InvadersGameScene(Scene):
             # reseting the game
             if self._frames % self.frame_rate() == 0:
                 self._frames = 0
-                self.BGM = BGM()
+                self.bgm = BGM()
                 self.player = Player()
                 self.alien_move = 2
                 self.alien_position_x = 0
@@ -440,15 +443,15 @@ class InvadersGameScene(Scene):
             return
 
         # play BGM
-        if self._frames % self.BGM.timing == 0:
-            changed = self.BGM.play((5+sum(len(x) for x in self.aliens)))
-            if changed == True:
+        if self._frames % self.bgm.timing == 0:
+            changed = self.bgm.play((5+sum(len(x) for x in self.aliens)))
+            if changed is True:
                 self._frames = 0
 
         for bullet in self.bullets:
             # move bullets
             position = bullet.position
-            if bullet._explode_frame == 0:
+            if bullet.explode_frame == 0:
                 if bullet.is_player_owned:
                     position = bullet.move((0, -4))
                 else:
@@ -460,7 +463,7 @@ class InvadersGameScene(Scene):
                 continue
 
             if position[1] < 34:
-                if bullet._explode_frame == 0:
+                if bullet.explode_frame == 0:
                     bullet.move((0, 4))
                 bullet.explode(True)
 
@@ -474,7 +477,7 @@ class InvadersGameScene(Scene):
                         ExplodeSFX().play()
                         alien.explode()
                         self.bullets.remove(bullet)
-                        self._p1_score += alien.points
+                        self.p1_score += alien.points
                         self._next_life += alien.points
                         if self._next_life >= 1500:
                             PowerUpSFX().play()
@@ -509,20 +512,20 @@ class InvadersGameScene(Scene):
                         shield.damage(alien)
 
                 # make sure aliens only have 1 bullet on screen
-                if not any(bullet.is_player_owned == False for bullet in self.bullets):
+                if not any(bullet.is_player_owned is False for bullet in self.bullets):
                     shooter_pos = random.choice(self.alien_line_of_sight)
-                    if alien.grid_position == shooter_pos and alien._is_alive:
+                    if alien.grid_position == shooter_pos and alien.is_alive:
                         self.bullets.append(Bullet((alien.position[0]+6, alien.position[1]+8)))
 
-                if alien._explode_frame != 0:
+                if alien.explode_frame != 0:
                     done = alien.explode()
                     if done:
-                        alien._explode_frame = 0
-                        alien._is_alive = False
+                        alien.explode_frame = 0
+                        alien.is_alive = False
                         if sum(len(x) for x in self.aliens) == 0:
                             self._frames = 0
                     return
-        
+
         # make sure player only has 1 bullet on screen
         if not any(bullet.is_player_owned for bullet in self.bullets):
             if self.player.shooting:
@@ -546,14 +549,16 @@ class InvadersGameScene(Scene):
                     alien.position = (alien.position[0], new_y)
                     self.alien_position_y -= 1
 
-                if alien._is_alive == True:
-                    if self.alien_line_of_sight[alien.grid_position[0]] == None:
-                        if new_los == None or new_los[1] < alien.grid_position[1]:
+                if alien.is_alive is True:
+                    if self.alien_line_of_sight[alien.grid_position[0]] is None:
+                        if new_los is None:
+                            new_los = alien.grid_position
+                        elif new_los[1] < alien.grid_position[1]:
                             new_los = alien.grid_position
 
                 index += 1
 
-        if new_los != None:
+        if new_los is not None:
             self.alien_line_of_sight.pop(new_los[0])
             self.alien_line_of_sight.insert(new_los[0], new_los)
 
@@ -561,13 +566,15 @@ class InvadersGameScene(Scene):
             move_down = False
             for alien_row in self.aliens:
                 for alien in alien_row:
-                    if alien._is_alive == False:
+                    if alien.is_alive is False:
                         if alien.grid_position in self.alien_line_of_sight:
                             los_index = self.alien_line_of_sight.index(alien.grid_position)
                             self.alien_line_of_sight.pop(los_index)
                             self.alien_line_of_sight.insert(los_index, None)
+                        # I know what I'm doing, linter.
+                        # pylint: disable-next=modified-iterating-list
                         alien_row.remove(alien)
-                
+
                 if len(alien_row) == 0:
                     continue
 

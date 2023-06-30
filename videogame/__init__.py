@@ -6,6 +6,7 @@ import pickle
 
 
 def save_scores(leaderboard):
+    """Write leaderboard to 'leaderboard.pkl'"""
     with open('leaderboard.pkl', 'wb') as file_handle:
         pickle.dump(leaderboard, file_handle, pickle.HIGHEST_PROTOCOL)
 

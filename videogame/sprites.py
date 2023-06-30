@@ -8,21 +8,23 @@ class Sprite:
 
     def __init__(self, filename, position=(0, 0)):
         self.position = position
-        self._sheet = pygame.image.load(os.path.join(os.path.dirname(__file__), 'data', filename)).convert()
-        self._rect = pygame.Rect((0, 0, 16, 8))
-        self._surf = pygame.Surface(self._rect.size)
+        self.sheet = pygame.image.load(
+            os.path.join(os.path.dirname(__file__), 'data', filename)
+        ).convert()
+        self.rect = pygame.Rect((0, 0, 16, 8))
+        self.surf = pygame.Surface(self.rect.size)
 
     def draw(self, surf: pygame.Surface, position=(0, 0), relative=False):
         """Draw the sprite on a surface at position"""
-        pygame.Surface.set_colorkey(self._surf, [0, 0, 0], pygame.RLEACCEL)
+        pygame.Surface.set_colorkey(self.surf, [0, 0, 0], pygame.RLEACCEL)
         if not isinstance(self, Font):
-            self._surf.blit(self._sheet, (0, 0), self._rect)
+            self.surf.blit(self.sheet, (0, 0), self.rect)
         if relative is False:
             self.position = position
-            surf.blit(self._surf, self.position)
+            surf.blit(self.surf, self.position)
         else:
             self.position = (self.position[0]+position[0], self.position[1]+position[1])
-            surf.blit(self._surf, self.position)
+            surf.blit(self.surf, self.position)
 
     def is_colliding(self, sprite):
         """Check collision between another sprite."""
@@ -30,27 +32,29 @@ class Sprite:
         # my "sprite" classes are not actually sprite objects, so instead
         # i am just temporarily creating the sprites to use collide_mask()
         # i am too stubborn to do things the right way, i may regret this later
-        if isinstance(self, Alien) and self._is_alive is False:
-            return False
+        if isinstance(self, Alien):
+            if self.is_alive is False:
+                return False
 
-        if isinstance(sprite, Alien) and sprite._is_alive is False:
-            return False
+        if isinstance(sprite, Alien):
+            if sprite.is_alive is False:
+                return False
 
         real_sprite1 = pygame.sprite.Sprite()
-        real_sprite1.image = self._surf
+        real_sprite1.image = self.surf
         real_sprite1.rect = pygame.Rect((
             self.position[0], self.position[1],
-            self._rect.width, self._rect.height
+            self.rect.width, self.rect.height
         ))
-        real_sprite1.mask = pygame.mask.from_surface(self._surf)
+        real_sprite1.mask = pygame.mask.from_surface(self.surf)
 
         real_sprite2 = pygame.sprite.Sprite()
-        real_sprite2.image = sprite._surf
+        real_sprite2.image = sprite.surf
         real_sprite2.rect = pygame.Rect((
             sprite.position[0], sprite.position[1],
-            sprite._rect.width, sprite._rect.height
+            sprite.rect.width, sprite.rect.height
         ))
-        real_sprite2.mask = pygame.mask.from_surface(sprite._surf)
+        real_sprite2.mask = pygame.mask.from_surface(sprite.surf)
 
         return pygame.sprite.collide_mask(real_sprite1, real_sprite2)
 
@@ -63,11 +67,11 @@ class Player(Sprite):
         self.velocity = 0
         self.position_x = 24
         self.shooting = False
-        self._explode_frame = 0
+        self.explode_frame = 0
 
     def move(self, event):
         """Keyboard controls for moving"""
-        if self._explode_frame != 0:
+        if self.explode_frame != 0:
             self.velocity = 0
             return
 
@@ -88,7 +92,7 @@ class Player(Sprite):
 
     def shoot(self, event):
         """Keyboard controls for shooting"""
-        if self._explode_frame != 0:
+        if self.explode_frame != 0:
             self.shooting = False
             return
 
@@ -100,25 +104,25 @@ class Player(Sprite):
                 self.shooting = False
 
     def explode(self):
-        """Play explosion animation.
-        Return True when done"""
+        """Play explosion animation. Return True when done"""
         self.velocity = 0
-        
-        if self._explode_frame < 15:
-            if self._explode_frame % 2 == 0:
-                self._rect = pygame.Rect((16, 0, 16, 8))
-            else:
-                self._rect = pygame.Rect((32, 0, 16, 8))
-        else:
-            self._rect = pygame.Rect((0, 0, 0, 0))
-            self._surf = pygame.Surface(self._rect.size)
 
-        self._explode_frame += 1
-        return self._explode_frame == 30
-    
+        if self.explode_frame < 15:
+            if self.explode_frame % 2 == 0:
+                self.rect = pygame.Rect((16, 0, 16, 8))
+            else:
+                self.rect = pygame.Rect((32, 0, 16, 8))
+        else:
+            self.rect = pygame.Rect((0, 0, 0, 0))
+            self.surf = pygame.Surface(self.rect.size)
+
+        self.explode_frame += 1
+        return self.explode_frame == 30
+
     def respawn(self):
-        self._rect = pygame.Rect((0, 0, 16, 8))
-        self._surf = pygame.Surface(self._rect.size)
+        """Player reset to alive frame and position"""
+        self.rect = pygame.Rect((0, 0, 16, 8))
+        self.surf = pygame.Surface(self.rect.size)
         self.position_x = 24
 
     def draw(self, surf: pygame.Surface, position=(0, 0), relative=False):
@@ -134,16 +138,16 @@ class Alien(Sprite):
         """Initialize the Alien."""
         super().__init__(filename, position)
         self.points = 0
-        self._is_alive = True
-        self._explode_frame = 0
+        self.is_alive = True
+        self.explode_frame = 0
         self._idle_frame = 0
         self.grid_position = grid_position
 
     def anim(self):
         """Alternative between 2 alien frames"""
-        if self._is_alive and self._explode_frame == 0:
-            self._rect = pygame.Rect((16*self._idle_frame, 0, 16, 8))
-            self._surf = pygame.Surface(self._rect.size)
+        if self.is_alive and self.explode_frame == 0:
+            self.rect = pygame.Rect((16*self._idle_frame, 0, 16, 8))
+            self.surf = pygame.Surface(self.rect.size)
             if self._idle_frame == 0:
                 self._idle_frame = 1
             else:
@@ -152,17 +156,17 @@ class Alien(Sprite):
     def explode(self):
         """Play explosion animation.
         Return True when done"""
-        if self._explode_frame == 0:
-            self._rect = pygame.Rect((32, 0, 16, 8))
+        if self.explode_frame == 0:
+            self.rect = pygame.Rect((32, 0, 16, 8))
             # self.position = (self.position[0]-2, self.position[1])
-            self._surf = pygame.Surface(self._rect.size)
+            self.surf = pygame.Surface(self.rect.size)
 
-        self._explode_frame += 1
-        return self._explode_frame == 15
+        self.explode_frame += 1
+        return self.explode_frame == 15
 
     def draw(self, surf: pygame.Surface, position=(0, 0), relative=False):
         """Draw the sprite, only if alien is alive"""
-        if self._is_alive:
+        if self.is_alive:
             super().draw(surf, position, relative)
 
 class Squid(Alien):
@@ -195,8 +199,8 @@ class Cuttlefish(Alien):
     def __init__(self, position, points=50):
         """Initialize the Cuttlefish (UFO) alien."""
         super().__init__('alien4.png', position, (-1, -1))
-        self._rect = pygame.Rect((0, 0, 24, 8))
-        self._surf = pygame.Surface(self._rect.size)
+        self.rect = pygame.Rect((0, 0, 24, 8))
+        self.surf = pygame.Surface(self.rect.size)
         self.points = points
 
 class Shield(Sprite):
@@ -205,24 +209,24 @@ class Shield(Sprite):
     def __init__(self, position):
         """Initialize the Shield."""
         super().__init__('shield.png', position)
-        self._rect = pygame.Rect((0, 0, 24, 16))
-        self._surf = pygame.Surface(self._rect.size)
+        self.rect = pygame.Rect((0, 0, 24, 16))
+        self.surf = pygame.Surface(self.rect.size)
 
     def damage(self, sprite):
         """Create damage to shield."""
-        mask = pygame.Surface.copy(sprite._sheet)
+        mask = pygame.Surface.copy(sprite.sheet)
         pygame.Surface.set_colorkey(mask, [0, 0, 0], pygame.RLEACCEL)
-        colorImage = pygame.Surface(mask.get_size()).convert_alpha()
-        colorImage.fill([255, 0, 0])
-        mask.blit(colorImage, (0,0), special_flags = pygame.BLEND_RGBA_MULT)
-        self._surf.blit(mask, (
-                sprite.position[0] - self.position[0], 
+        color_image = pygame.Surface(mask.get_size()).convert_alpha()
+        color_image.fill([255, 0, 0])
+        mask.blit(color_image, (0,0), special_flags = pygame.BLEND_RGBA_MULT)
+        self.surf.blit(mask, (
+                sprite.position[0] - self.position[0],
                 sprite.position[1] - self.position[1]
-            ), sprite._rect
+            ), sprite.rect
         )
-        pixels = pygame.PixelArray(self._surf.convert())
+        pixels = pygame.PixelArray(self.surf.convert())
         pixels.replace((255, 0, 0), (0, 0, 0))
-        self._sheet = pixels.make_surface()
+        self.sheet = pixels.make_surface()
 
 class Bullet(Sprite):
     """Bullet class for displaying bullet sprites"""
@@ -231,12 +235,12 @@ class Bullet(Sprite):
         """Initialize the bullet projectile."""
         super().__init__('bullet.png', position)
         self.is_player_owned = is_player_owned
-        self._rect = pygame.Rect((projectile*4*3, 0, 3, 8))
+        self.rect = pygame.Rect((projectile*4*3, 0, 3, 8))
         if self.is_player_owned:
-            self._rect = pygame.Rect((14*3, 0, 3, 8))
-        self._surf = pygame.Surface(self._rect.size)
+            self.rect = pygame.Rect((14*3, 0, 3, 8))
+        self.surf = pygame.Surface(self.rect.size)
         self._projectile = projectile
-        self._explode_frame = 0
+        self.explode_frame = 0
         self._move_frame = 0
 
     def move(self, position):
@@ -247,8 +251,8 @@ class Bullet(Sprite):
 
         # animation
         if self.is_player_owned is False:
-            if self._explode_frame == 0:
-                self._rect = pygame.Rect(((self._projectile*4*3)+(3*self._move_frame), 0, 3, 8))
+            if self.explode_frame == 0:
+                self.rect = pygame.Rect(((self._projectile*4*3)+(3*self._move_frame), 0, 3, 8))
             self._move_frame += 1
             if self._move_frame == 4:
                 self._move_frame = 0
@@ -259,17 +263,17 @@ class Bullet(Sprite):
         If miss is True, play a different sprite
         If hidden is True, don't show sprite
         Return True when done"""
-        if self._explode_frame == 0:
+        if self.explode_frame == 0:
             if not miss:
-                self._rect = pygame.Rect((3*12, 0, 0 if hidden else 6, 8))
+                self.rect = pygame.Rect((3*12, 0, 0 if hidden else 6, 8))
                 self.position = (self.position[0]-2, self.position[1])
             else:
-                self._rect = pygame.Rect((3*15, 0, 0 if hidden else 8, 8))
+                self.rect = pygame.Rect((3*15, 0, 0 if hidden else 8, 8))
                 self.position = (self.position[0]-2, self.position[1])
-            self._surf = pygame.Surface(self._rect.size)
+            self.surf = pygame.Surface(self.rect.size)
 
-        self._explode_frame += 1
-        return self._explode_frame == 15
+        self.explode_frame += 1
+        return self.explode_frame == 15
 
     def draw(self, surf: pygame.Surface, position=(0, 0), relative=False):
         super().draw(surf, position, relative)
@@ -280,8 +284,8 @@ class Font(Sprite):
     def __init__(self):
         """Initialize the Font."""
         super().__init__('font.png')
-        self._rect = None
-        self._surf = None
+        self.rect = None
+        self.surf = None
         self._font_map = [
             'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
             'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
@@ -290,8 +294,8 @@ class Font(Sprite):
         ]
 
     def draw(self, surf: pygame.Surface, position=(0, 0), relative=False, text=""):
-        self._rect = pygame.Rect((0, 0, len(text)*8, 8))
-        self._surf = pygame.Surface(self._rect.size)
+        self.rect = pygame.Rect((0, 0, len(text)*8, 8))
+        self.surf = pygame.Surface(self.rect.size)
 
         for i, letter in enumerate(text):
             letter = letter.lower()
@@ -300,7 +304,7 @@ class Font(Sprite):
                 letter_pos = self._font_map.index(letter)
             if letter == ' ':
                 continue
-            letter_x = letter_pos % (self._sheet.get_width() // 8)
+            letter_x = letter_pos % (self.sheet.get_width() // 8)
             letter_rect = pygame.Rect(letter_x * 8, 0, 8, 8)
-            self._surf.blit(self._sheet, (i * 8, 0), letter_rect)
+            self.surf.blit(self.sheet, (i * 8, 0), letter_rect)
         super().draw(surf, position, relative)
