@@ -241,6 +241,7 @@ class InvadersGameScene(Scene):
 
         self._anim_state = 0
         self.loading = True
+        self.game_over_txt = ""
 
         self.player = Player()
 
@@ -322,10 +323,29 @@ class InvadersGameScene(Scene):
                 self.alien_line_of_sight = [alien.grid_position for alien in self.aliens[4]]
             return
 
+        # check for gameover and play gameover animation
+        if self._lives == 0:
+            txt = "GAME OVER               "
+            if self._frames % (self.frame_rate() / 12) == 0:
+                self.game_over_txt = txt[:self._anim_state+1]
+                self._anim_state += 1
+                if self.game_over_txt == txt:
+                    self._anim_state = 0
+                    self.next_scene()
+            return
+
         # check if all aliens are dead
-        if len(self.aliens) == 0:
+        if sum(len(x) for x in self.aliens) == 0:
             self.player.velocity = 0
             self.bullets.clear()
+            # reseting the game
+            if self._frames % self.frame_rate() == 0:
+                self.player = Player()
+                self.alien_move = 2
+                self.alien_position_x = 0
+                self.alien_position_y = 0
+                self._level += 1
+                self.loading = True
             return
 
         # check if player was hit and play animation
@@ -396,6 +416,7 @@ class InvadersGameScene(Scene):
                     if done:
                         alien._explode_frame = 0
                         alien._is_alive = False
+                        self._frames = 0
                     return
         
         # make sure player only has 1 bullet on screen
@@ -460,6 +481,9 @@ class InvadersGameScene(Scene):
 
     def draw(self):
         """Draw the scene."""
+
+        # draw game over message
+        Font().draw(self._screen, (96-16-8, 64-8), text=self.game_over_txt)
 
         # draw screen border
         bottom = pygame.Surface((self._screen.get_width(), 1))
