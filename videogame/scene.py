@@ -156,6 +156,7 @@ class CreditScene(Scene):
                     "to  continue")
         super().draw()
 
+
 class ControlsScene(Scene):
     """Scene of my controls unrelated to space invaders"""
 
