@@ -497,6 +497,7 @@ class InvadersGameScene(Scene):
             for alien in alien_row:
                 # check if alien passed y-axis limit (gameover)
                 if alien.position[1] >= 216:
+                    DeathSFX().play()
                     self._lives = 0
                     self.player.explode()
                     return
