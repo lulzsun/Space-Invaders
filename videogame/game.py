@@ -13,19 +13,6 @@ from videogame.scene import (
 )
 
 
-def display_info():
-    """Print out information about the display driver and video information."""
-    print(f'The display is using the "{pygame.display.get_driver()}" driver.')
-    print("Video Info:")
-    print(pygame.display.Info())
-
-
-# If you're interested in using abstract base classes, feel free to rewrite
-# these classes.
-# For more information about Python Abstract Base classes, see
-# https://docs.python.org/3.8/library/abc.html
-
-
 class VideoGame:
     """Base class for creating PyGame games."""
 
