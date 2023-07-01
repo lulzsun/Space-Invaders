@@ -1,2 +1,12 @@
+astroid==2.15.5
+dill==0.3.6
+isort==5.12.0
+lazy-object-proxy==1.9.0
+mccabe==0.7.0
+platformdirs==3.8.0
+pycodestyle==2.10.0
 pygame==2.4.0
+pylint==2.17.4
+tomlkit==0.11.8
 -e videogame
+wrapt==1.15.0
