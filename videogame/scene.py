@@ -49,13 +49,16 @@ class Scene:
         Font().draw(self._screen, (168, 24), text="0000")
         if self._secret:
             Font().draw(self._screen, (80, 32), text="LULZSUN")
-        Font().draw(self._screen, (8, 240), text=str(max(min(self._lives, 99), 0)))
+        Font().draw(
+            self._screen, (8, 240), text=str(max(min(self._lives, 99), 0))
+        )
         # Draw lives
         for i in range(min(self._lives-1, 6)):
             Player().draw(self._screen, (24+(i*16), 240))
 
-        Font().draw(self._screen, (136, 240),
-                    text=f"CREDIT {str(self._credit).zfill(2)}"
+        Font().draw(
+            self._screen, (136, 240),
+            text=f"CREDIT {str(self._credit).zfill(2)}"
         )
 
     def process_event(self, event):
@@ -79,17 +82,27 @@ class Scene:
         """Render all sprite updates."""
         # create a color overlay in certain areas of the screen
         # this mimics 1978 space invaders coloring
-        overlay_rect = pygame.Surface((self._screen.get_width(), 32), pygame.SRCALPHA)
+        overlay_rect = pygame.Surface(
+            (self._screen.get_width(), 32), pygame.SRCALPHA
+        )
         overlay_rect.fill((254, 30, 30))
-        self._screen.blit(overlay_rect, (0, 32), special_flags=pygame.BLEND_RGB_MULT)
+        self._screen.blit(
+            overlay_rect, (0, 32), special_flags=pygame.BLEND_RGB_MULT
+        )
 
-        overlay_rect = pygame.Surface((self._screen.get_width(), 56), pygame.SRCALPHA)
+        overlay_rect = pygame.Surface(
+            (self._screen.get_width(), 56), pygame.SRCALPHA
+        )
         overlay_rect.fill((30, 254, 30))
-        self._screen.blit(overlay_rect, (0, 184), special_flags=pygame.BLEND_RGB_MULT)
+        self._screen.blit(
+            overlay_rect, (0, 184), special_flags=pygame.BLEND_RGB_MULT
+        )
 
         overlay_rect = pygame.Surface((111, 16), pygame.SRCALPHA)
         overlay_rect.fill((30, 254, 30))
-        self._screen.blit(overlay_rect, (25, 240), special_flags=pygame.BLEND_RGB_MULT)
+        self._screen.blit(
+            overlay_rect, (25, 240), special_flags=pygame.BLEND_RGB_MULT
+        )
 
     def update_scene(self):
         """Update the scene state."""
@@ -141,19 +154,34 @@ class CreditScene(Scene):
             self.next_scene()
 
     def draw(self):
-        Font().draw(self._screen, (68, 64), text="* CREDITS *")
-        Font().draw(self._screen, (8, 88), text=
-                    "This game was developed by")
-        Font().draw(self._screen, (64, 104), text=
-                    "Jimmy  Quach")
-        Font().draw(self._screen, (40-8, 128), text=
-                    "Summer 2023 CPSC 385")
-        Font().draw(self._screen, (40-8, 144), text=
-                    "CAL STATE  FULLERTON")
-        Font().draw(self._screen, (48, 192), text=
-                    "Press any button")
-        Font().draw(self._screen, (64, 208), text=
-                    "to  continue")
+        Font().draw(
+            self._screen, (68, 64),
+            text="* CREDITS *"
+        )
+        Font().draw(
+            self._screen, (8, 88),
+            text="This game was developed by"
+        )
+        Font().draw(
+            self._screen, (64, 104),
+            text="Jimmy  Quach"
+        )
+        Font().draw(
+            self._screen, (40-8, 128),
+            text="Summer 2023 CPSC 385"
+        )
+        Font().draw(
+            self._screen, (40-8, 144),
+            text="CAL STATE  FULLERTON"
+        )
+        Font().draw(
+            self._screen, (48, 192),
+            text="Press any button"
+        )
+        Font().draw(
+            self._screen, (64, 208),
+            text="to  continue"
+        )
         super().draw()
 
 
@@ -167,21 +195,38 @@ class ControlsScene(Scene):
             self.next_scene()
 
     def draw(self):
-        Font().draw(self._screen, (60, 64), text="* CONTROLS *")
-        Font().draw(self._screen, (76, 88), text=
-                    "Movement")
-        Font().draw(self._screen, (80, 104), text=
-                    "<A> <D>")
-        Font().draw(self._screen, (8, 120), text=
-                    "<LEFT ARROW> <RIGHT ARROW>")
-        Font().draw(self._screen, (88, 144), text=
-                    "Shoot")
-        Font().draw(self._screen, (80, 160), text=
-                    "<SPACE>")
-        Font().draw(self._screen, (48, 192), text=
-                    "Press any button")
-        Font().draw(self._screen, (64, 208), text=
-                    "to  continue")
+        Font().draw(
+            self._screen, (60, 64),
+            text="* CONTROLS *"
+        )
+        Font().draw(
+            self._screen, (76, 88),
+            text="Movement"
+        )
+        Font().draw(
+            self._screen, (80, 104),
+            text="<A> <D>"
+        )
+        Font().draw(
+            self._screen, (8, 120),
+            text="<LEFT ARROW> <RIGHT ARROW>"
+        )
+        Font().draw(
+            self._screen, (88, 144),
+            text="Shoot"
+        )
+        Font().draw(
+            self._screen, (80, 160),
+            text="<SPACE>"
+        )
+        Font().draw(
+            self._screen, (48, 192),
+            text="Press any button"
+        )
+        Font().draw(
+            self._screen, (64, 208),
+            text="to  continue"
+        )
         super().draw()
 
 
@@ -214,11 +259,17 @@ class TitleScene(Scene):
 
         # animating the type writer effect
         if self._frames % (self.frame_rate() / 12) == 0:
-            if self._anim_state != 2 and self._anim_state < len(self._constant_strings):
+            if (
+                self._anim_state != 2 and
+                self._anim_state < len(self._constant_strings)
+            ):
                 tmp = self._constant_strings[self._anim_state]
                 txt = tmp[:len(self._strings[self._anim_state])+1]
                 self._strings[self._anim_state] = txt
-                if self._strings[self._anim_state] == self._constant_strings[self._anim_state]:
+                if (
+                    self._strings[self._anim_state] ==
+                    self._constant_strings[self._anim_state]
+                ):
                     self._anim_state += 1
             elif self._anim_state == 2:
                 self._strings[2] = self._constant_strings[2]
@@ -325,12 +376,16 @@ class LeaderboardScene(Scene):
             Font().draw(self._screen, (56, 88+(i*16)), text=score)
 
         if self._top_5_txt[4] != "":
-            Font().draw(self._screen, (56, 176+8),
-                text=f"    {self.current_name}   {str(self.hi_score).zfill(4)}")
+            Font().draw(
+                self._screen, (56, 176+8),
+                text=f"    {self.current_name}   {str(self.hi_score).zfill(4)}"
+            )
             carat = pygame.Surface((8, 1))
             carat.fill((255, 255, 255))
             if self.name_char_index != 3:
-                self._screen.blit(carat, (87+(self.name_char_index*8), 194))
+                self._screen.blit(
+                    carat, (87+(self.name_char_index*8), 194)
+                )
             Font().draw(self._screen, (64, 208), text="Enter  name")
         super().draw()
 
@@ -384,7 +439,7 @@ class InvadersGameScene(Scene):
         self.player.shoot(event)
 
     # Linter, please shut up. Sincerely, lulzsun
-    # pylint: disable-next=too-many-return-statements,too-many-branches,too-many-statements,too-many-locals
+    # pylint: disable-next=R
     def update_scene(self):
         """Update the scene state."""
         super().update_scene()
@@ -394,43 +449,61 @@ class InvadersGameScene(Scene):
             if self._anim_state == 0:
                 if len(self.shields) == 4:
                     self.shields.clear()
-                self.shields.append(Shield((31+((24+22)*len(self.shields)), 192)))
+                self.shields.append(
+                    Shield((31+((24+22)*len(self.shields)), 192))
+                )
                 if len(self.shields) == 4:
                     self._anim_state += 1
             elif self._anim_state == 1:
                 self.aliens[4].append(
-                    Octopus((len(self.aliens[4])*16 + 24, 128), (len(self.aliens[4]), 4))
+                    Octopus(
+                        (len(self.aliens[4])*16 + 24, 128),
+                        (len(self.aliens[4]), 4)
+                    )
                 )
                 if len(self.aliens[4]) == 11:
                     self._anim_state += 1
             elif self._anim_state == 2:
                 self.aliens[3].append(
-                    Octopus((len(self.aliens[3])*16 + 24, 112), (len(self.aliens[3]), 3))
+                    Octopus(
+                        (len(self.aliens[3])*16 + 24, 112),
+                        (len(self.aliens[3]), 3)
+                    )
                 )
                 if len(self.aliens[3]) == 11:
                     self._anim_state += 1
             elif self._anim_state == 3:
                 self.aliens[2].append(
-                    Crab((len(self.aliens[2])*16 + 24, 96), (len(self.aliens[2]), 2))
+                    Crab(
+                        (len(self.aliens[2])*16 + 24, 96),
+                        (len(self.aliens[2]), 2)
+                    )
                 )
                 if len(self.aliens[2]) == 11:
                     self._anim_state += 1
             elif self._anim_state == 4:
                 self.aliens[1].append(
-                    Crab((len(self.aliens[1])*16 + 24, 80), (len(self.aliens[1]), 1))
+                    Crab(
+                        (len(self.aliens[1])*16 + 24, 80),
+                        (len(self.aliens[1]), 1)
+                    )
                 )
                 if len(self.aliens[1]) == 11:
                     self._anim_state += 1
             elif self._anim_state == 5:
                 self.aliens[0].append(
-                    Squid((len(self.aliens[0])*16 + 24, 64), (len(self.aliens[0]), 0))
+                    Squid(
+                        (len(self.aliens[0])*16 + 24, 64),
+                        (len(self.aliens[0]), 0)
+                    )
                 )
                 if len(self.aliens[0]) == 11:
                     self._anim_state += 1
             elif self._anim_state == 6:
                 self._anim_state = 0
                 self.loading = False
-                self.alien_line_of_sight = [alien.grid_position for alien in self.aliens[4]]
+                los = [alien.grid_position for alien in self.aliens[4]]
+                self.alien_line_of_sight = los
             return
 
         # check if player was hit and play animation
@@ -543,10 +616,14 @@ class InvadersGameScene(Scene):
                         shield.damage(alien)
 
                 # make sure aliens only have 1 bullet on screen
-                if not any(bullet.is_player_owned is False for bullet in self.bullets):
+                if not any(
+                    bullet.is_player_owned is False for bullet in self.bullets
+                ):
                     shooter_pos = random.choice(self.alien_line_of_sight)
                     if alien.grid_position == shooter_pos and alien.is_alive:
-                        self.bullets.append(Bullet((alien.position[0]+6, alien.position[1]+8)))
+                        self.bullets.append(
+                            Bullet((alien.position[0]+6, alien.position[1]+8))
+                        )
 
                 if alien.explode_frame != 0:
                     done = alien.explode()
@@ -561,7 +638,12 @@ class InvadersGameScene(Scene):
         if not any(bullet.is_player_owned for bullet in self.bullets):
             if self.player.shooting:
                 ShootSFX().play()
-                self.bullets.append(Bullet((self.player.position_x+7, 211), is_player_owned=True))
+                self.bullets.append(
+                    Bullet(
+                        (self.player.position_x+7, 211),
+                        is_player_owned=True
+                    )
+                )
 
         # alien movement, overly complicated, but in a nutshell,
         # this allows one alien to move per frame. the less aliens
@@ -581,11 +663,12 @@ class InvadersGameScene(Scene):
                     self.alien_position_y -= 1
 
                 if alien.is_alive is True:
-                    if self.alien_line_of_sight[alien.grid_position[0]] is None:
+                    pos = alien.grid_position
+                    if self.alien_line_of_sight[pos[0]] is None:
                         if new_los is None:
-                            new_los = alien.grid_position
-                        elif new_los[1] < alien.grid_position[1]:
-                            new_los = alien.grid_position
+                            new_los = pos
+                        elif new_los[1] < pos[1]:
+                            new_los = pos
 
                 index += 1
 
@@ -598,8 +681,9 @@ class InvadersGameScene(Scene):
             for alien_row in self.aliens:
                 for alien in alien_row:
                     if alien.is_alive is False:
-                        if alien.grid_position in self.alien_line_of_sight:
-                            los_index = self.alien_line_of_sight.index(alien.grid_position)
+                        pos = alien.grid_position
+                        if pos in self.alien_line_of_sight:
+                            los_index = self.alien_line_of_sight.index(pos)
                             self.alien_line_of_sight.pop(los_index)
                             self.alien_line_of_sight.insert(los_index, None)
                         # I know what I'm doing, linter.

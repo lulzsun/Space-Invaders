@@ -3,7 +3,6 @@
 # @lulzsun
 """Game objects to create PyGame based games."""
 
-import itertools
 import os
 import warnings
 
@@ -26,11 +25,16 @@ class SpaceInvadersGame():
         window_height = 256
         self._window_size = (window_width, window_height)
         self._clock = pygame.time.Clock()
-        self._screen = pygame.display.set_mode(self._window_size, pygame.SCALED | pygame.RESIZABLE)
+        self._screen = pygame.display.set_mode(
+            self._window_size, pygame.SCALED | pygame.RESIZABLE
+        )
 
         initial_scale_factor = 3  # <-- adjustable
         window = sdl2.Window.from_display_module()
-        window.size = (window_width * initial_scale_factor, window_height * initial_scale_factor)
+        window.size = (
+            window_width * initial_scale_factor,
+            window_height * initial_scale_factor
+        )
         window.position = sdl2.WINDOWPOS_CENTERED
         window.show()
 
@@ -51,9 +55,9 @@ class SpaceInvadersGame():
     def build_scene_graph(self):
         """Build scene graph for the game demo."""
         self._scene_graph = [
-            CreditScene(self._screen), # i have no idea but
-            ControlsScene,             # without this, we
-            TitleScene,                # would get seg faults...
+            CreditScene(self._screen),  # i have no idea but
+            ControlsScene,              # without this, we
+            TitleScene,                 # would get seg faults...
             InvadersGameScene,
             LeaderboardScene,
         ]
@@ -72,7 +76,8 @@ class SpaceInvadersGame():
                 current_scene.draw()
                 current_scene.render_updates()
                 pygame.display.update()
-            while not current_scene.end_scene() and not current_scene.is_exiting:
+            while (not current_scene.end_scene()
+                   and not current_scene.is_exiting):
                 self._clock.tick(current_scene.frame_rate())
                 for event in pygame.event.get():
                     Scene(self._screen).process_event(event)

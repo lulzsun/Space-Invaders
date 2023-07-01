@@ -20,7 +20,9 @@ class Sound:
     def play(self):
         """Play sound file, stop sound if one is already playing"""
         pygame.mixer.Channel(self._channel).stop()
-        pygame.mixer.Channel(self._channel).play(pygame.mixer.Sound(self.filepath()))
+        pygame.mixer.Channel(self._channel).play(
+            pygame.mixer.Sound(self.filepath())
+        )
 
 
 class BGM(Sound):

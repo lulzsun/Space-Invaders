@@ -6,6 +6,7 @@
 import os
 import pygame
 
+
 class Sprite:
     """Base class for making a sprite."""
 
@@ -26,7 +27,10 @@ class Sprite:
             self.position = position
             surf.blit(self.surf, self.position)
         else:
-            self.position = (self.position[0]+position[0], self.position[1]+position[1])
+            self.position = (
+                self.position[0]+position[0],
+                self.position[1]+position[1]
+            )
             surf.blit(self.surf, self.position)
 
     def is_colliding(self, sprite):
@@ -60,6 +64,7 @@ class Sprite:
         real_sprite2.mask = pygame.mask.from_surface(sprite.surf)
 
         return pygame.sprite.collide_mask(real_sprite1, real_sprite2)
+
 
 class Player(Sprite):
     """Player sprite class which the user controls"""
@@ -134,6 +139,7 @@ class Player(Sprite):
         self.position_x = max(min(self.position_x, 224-16*2), 16)
         super().draw(surf, position, relative)
 
+
 class Alien(Sprite):
     """Base alien class for all types of aliens"""
 
@@ -172,6 +178,7 @@ class Alien(Sprite):
         if self.is_alive:
             super().draw(surf, position, relative)
 
+
 class Squid(Alien):
     """Squid class sprite, an alien varient"""
 
@@ -179,6 +186,7 @@ class Squid(Alien):
         """Initialize the Squid alien."""
         super().__init__('alien1.png', position, grid_position)
         self.points = 30
+
 
 class Crab(Alien):
     """Crab class sprite, an alien varient"""
@@ -188,6 +196,7 @@ class Crab(Alien):
         super().__init__('alien2.png', position, grid_position)
         self.points = 20
 
+
 class Octopus(Alien):
     """Octopus class sprite, an alien varient"""
 
@@ -195,6 +204,7 @@ class Octopus(Alien):
         """Initialize the Octopus alien."""
         super().__init__('alien3.png', position, grid_position)
         self.points = 10
+
 
 class Cuttlefish(Alien):
     """Cuttlefish class sprite, an alien varient"""
@@ -205,6 +215,7 @@ class Cuttlefish(Alien):
         self.rect = pygame.Rect((0, 0, 24, 8))
         self.surf = pygame.Surface(self.rect.size)
         self.points = points
+
 
 class Shield(Sprite):
     """Shield class for displaying shield sprite"""
@@ -221,7 +232,7 @@ class Shield(Sprite):
         pygame.Surface.set_colorkey(mask, [0, 0, 0], pygame.RLEACCEL)
         color_image = pygame.Surface(mask.get_size()).convert_alpha()
         color_image.fill([255, 0, 0])
-        mask.blit(color_image, (0,0), special_flags = pygame.BLEND_RGBA_MULT)
+        mask.blit(color_image, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
         self.surf.blit(mask, (
                 sprite.position[0] - self.position[0],
                 sprite.position[1] - self.position[1]
@@ -230,6 +241,7 @@ class Shield(Sprite):
         pixels = pygame.PixelArray(self.surf.convert())
         pixels.replace((255, 0, 0), (0, 0, 0))
         self.sheet = pixels.make_surface()
+
 
 class Bullet(Sprite):
     """Bullet class for displaying bullet sprites"""
@@ -255,7 +267,10 @@ class Bullet(Sprite):
         # animation
         if self.is_player_owned is False:
             if self.explode_frame == 0:
-                self.rect = pygame.Rect(((self._projectile*4*3)+(3*self._move_frame), 0, 3, 8))
+                self.rect = pygame.Rect((
+                    (self._projectile*4*3)+(3*self._move_frame),
+                    0, 3, 8
+                ))
             self._move_frame += 1
             if self._move_frame == 4:
                 self._move_frame = 0
@@ -281,6 +296,7 @@ class Bullet(Sprite):
     def draw(self, surf: pygame.Surface, position=(0, 0), relative=False):
         super().draw(surf, position, relative)
 
+
 class Font(Sprite):
     """Font class for displaying 8x8 ascii sprites"""
 
@@ -296,7 +312,10 @@ class Font(Sprite):
             '*', '?', '-'
         ]
 
-    def draw(self, surf: pygame.Surface, position=(0, 0), relative=False, text=""):
+    def draw(
+        self, surf: pygame.Surface,
+        position=(0, 0), relative=False, text=""
+    ):
         self.rect = pygame.Rect((0, 0, len(text)*8, 8))
         self.surf = pygame.Surface(self.rect.size)
 
